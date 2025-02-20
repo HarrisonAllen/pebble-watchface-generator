@@ -1,13 +1,11 @@
 {
-    "targetPlatforms": [
-        "basalt"
-    ], 
-    "displayName": "Horizontal Stripes", 
-    "name": "horizontal-stripes", 
+    "targetPlatforms": ["basalt"], 
+    "displayName": "Vertical Stripes", 
+    "name": "vertical-stripes", 
     "messageKeys": {
         "dummy": 10000
     }, 
-    "companyName": "Harrison Allen", 
+    "companyName": "Watchface Generator", 
     "enableMultiJS": true, 
     "versionLabel": "1.0", 
     "capabilities": [], 
@@ -15,8 +13,8 @@
     "appKeys": {
         "dummy": 10000
     }, 
-    "longName": "Horizontal Stripes", 
-    "shortName": "Horizontal Stripes", 
+    "longName": "Vertical Stripes", 
+    "shortName": "Vertical Stripes", 
     "watchapp": {
         "watchface": true
     }, 
@@ -29,5 +27,5 @@
             }
         ]
     }, 
-    "uuid": "13371337-b7ec-4380-b131-3c9f44e2d1e5"
+    "uuid": "13371337-efc2-11ef-bb13-002b670b1da6"
 }

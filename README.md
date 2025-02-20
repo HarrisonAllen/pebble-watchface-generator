@@ -58,9 +58,7 @@ What I want out of this blob:
     * displayName
     * name
     * companyName 
-    * longName (just display name?)
-    * shortName (just display name?)
-    * uuid (needs to start with `13371337`!)
+    * uuid (optional, omit to autogenerate for updating existing watchfaces, starts with `13371337`)
 
 ### The generator
 
@@ -80,7 +78,7 @@ Most of the code is derived from [pebble-firmware](https://github.com/pebble-dev
 Prerequisites:
 * a directory with the new assets
 * a json blob of all of the required information
-* the template pbw (extracted?)
+* the template pbw (pre-extracted, for now)
 
 Generating (done by a script obviously, `create_watchface.py`?):
 1. Copy and update `appinfo.json` with the new watchface information
@@ -88,18 +86,21 @@ Generating (done by a script obviously, `create_watchface.py`?):
     1. Create a `<platform>` directory
     2. Generate a new `app_resources.pbpack`
     3. Generate a new `manifest.json`
-    4. Copy and update `pebble-app.bin` with the resource checksum
+    4. Copy and update `pebble-app.bin` with metadata
 5. Zip it up into a pretty .pbw and give it to the user/appstore
 
 ## Current state of affairs
 
-As it stands, I have successfully set up `create_watchface.py` to generate a watchface using a new `background.png`. It creates `app_resources.pbpack`, `manifest.json`, and `pebble-app.bin` for a given platform. These files will need to be manually organized and zipped up into a .pbw. `appinfo.json` will need to be manually moved over as well.
+As it stands, I have successfully set up `create_watchface.py` to generate a new watchface:
+* Replaces `background.png`
+* Generates all files for functioning watchface (app info, then for each platform: pbpack, manifest, app binary)
+* You will have to manually zip up the .pbw though
 
 ### Generated samples
 
 I've set up a few samples in `generated-samples/` that are ready to run, and can be used for testing the generator.
 * `resources` contains an extracted template watchface, and resources for the two generated watchfaces
-* `*-stripes-watchface` are generated watchfaces, and I've manually copied over `appinfo.json` and manually packaged them into .pbws
+* `horizontal-stripes` and `vertical-stripes` are generated watchfaces from the resources folder
 
 ### Using the generator
 
@@ -110,14 +111,20 @@ Prereqs:
 * cd to `generator`
 
 Run it
-1. Run ```python3 create_watchface.py <platform> <resource_path> <app_path> <output_dir>```
-    * `<platform>` is the platform to build for, e.g. `basalt`
-    * `<resource_path>` is the directory containing the new app resources
-    * `<app_path>` is the path of the template app binary
-    * `<output_dir>` is where to save the generated files
-3. Copy over `appinfo.json`, and maybe update it too
-2. Arrange the directory to match a .pbw structure
-3. Zip it all together
+1. Create a `resources` directory to contain the new `background.png` (can have one for each platform) and a modified version of `watchface_info.json` (optional: add `uuid` to `metadata`)
+2. Run ```python3 create_watchface.py <template_dir> <resource_dir> <output_dir>```
+    * `<template_dir>` is the directory containing the (extracted) template pbw
+    * `<resource_dir>` is the path to the new resources (`background.png`, `watchface_info.json`, ...)
+    * `<output_dir>` is the output directory, must not exist (this is by design to avoid accidentally deleting dirs while testing, would prob change that in prod)
+2. The .pbw will be in `output_dir` with the name provided under `metadata`:`name` in your `watchface_info.json`
+
+For example:
+```
+python3 create_watchface.py \
+   /path/to/repo/generated-samples/resources/extracted-template-watchface/
+   /path/to/repo/generated-samples/resources/horizontal-stripes/
+   /path/to/repo/generated-samples/horizontal-stripes
+```
 
 ## TODOs
 
@@ -131,12 +138,12 @@ Run it
 - [ ] Get fonts working
 - [ ] Get raw data working
 - [ ] Run against multiple platforms
-- [ ] Read in information from json
-- [ ] Update appinfo
-    - [ ] Figure out how appinfo is baked into binary
-- [ ] Generate full .pbw
-- [ ] ... without writing to disk
-- [ ] Match with final template watchface, web designer
+- [x] Read in information from json
+- [x] Update appinfo.json
+    - [x] Figure out how appinfo is baked into binary and update there, too
+- [x] Generate full .pbw
+    - [ ] ... without writing to disk
+- [ ] Match with final template watchface, web designer (update binary file, etc.)
 - [ ] And more...
 
 ### Watchface
@@ -173,4 +180,8 @@ Resources come after these, starting at 0x100C (that offset is manifest (0x000C)
 
 ### App binary
 
-The crc of the resources is baked into the app binary. If it differs, the watch will reject the application: `Checksum for resources differs...` Through some analysis I found the crc is stored at `0x78` in the binary. The generator overwrites the old value with the crc of the new resource pack.
+There's metadata baked into the binary. The important ones for us are:
+* name @ `0x18`, format `<32s` (display name truncated to 32 length byte string)
+* company @ `0x38` format `<32s` (company name truncated to 32 length byte string)
+* uuid @ `0x68` format `<16s` (we'll want to create a new uuid and replace bytes 0:4 with "13371337")
+* resources crc @ `0x78` format `<I` (generated from resource pack)

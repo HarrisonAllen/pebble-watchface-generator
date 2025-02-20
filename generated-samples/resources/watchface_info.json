@@ -1,0 +1,28 @@
+{
+    "metadata": {
+        "target_platforms": [
+            "aplite",
+            "basalt",
+            "chalk",
+            "diorite"
+        ],
+        "display_name": "Template Watchface",
+        "name": "template-watchface",
+        "company_name": "Watchface Generator"
+    },
+    "customization": {
+        "background": {
+            "color": [255, 255, 255],
+            "x": 0,
+            "y": 0,
+            "width": 180,
+            "height": 180
+        },
+        "time": {
+            "font_size": 52,
+            "color": [0, 0, 0],
+            "x": 50,
+            "y": 20
+        }
+    }
+}

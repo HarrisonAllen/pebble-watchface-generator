@@ -1,0 +1,26 @@
+{
+    "metadata": {
+        "target_platforms": [
+            "basalt"
+        ],
+        "display_name": "Horizontal Stripes",
+        "name": "horizontal-stripes",
+        "company_name": "Watchface Generator",
+        "uuid": "13371337-efbb-11ef-b12c-002b670b1da6"
+    },
+    "customization": {
+        "background": {
+            "color": [255, 255, 255],
+            "x": 0,
+            "y": 0,
+            "width": 180,
+            "height": 180
+        },
+        "time": {
+            "font_size": 52,
+            "color": [0, 0, 0],
+            "x": 50,
+            "y": 20
+        }
+    }
+}
