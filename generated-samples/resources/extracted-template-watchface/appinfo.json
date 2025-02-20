@@ -1,0 +1,33 @@
+{
+    "targetPlatforms": [
+        "basalt"
+    ], 
+    "displayName": "Template Watchface", 
+    "name": "template-watchface", 
+    "messageKeys": {
+        "dummy": 10000
+    }, 
+    "companyName": "Harrison Allen", 
+    "enableMultiJS": true, 
+    "versionLabel": "1.0", 
+    "capabilities": [], 
+    "sdkVersion": "3", 
+    "appKeys": {
+        "dummy": 10000
+    }, 
+    "longName": "Template Watchface", 
+    "shortName": "Template Watchface", 
+    "watchapp": {
+        "watchface": true
+    }, 
+    "resources": {
+        "media": [
+            {
+                "type": "bitmap", 
+                "name": "IMAGE_BACKGROUND", 
+                "file": "images/background.png"
+            }
+        ]
+    }, 
+    "uuid": "13371337-b7ec-4380-b131-3c9f44e2d1e4"
+}

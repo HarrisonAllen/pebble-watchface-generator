@@ -1,0 +1,32 @@
+{
+  "name": "template-watchface",
+  "author": "Harrison Allen",
+  "version": "1.0.0",
+  "keywords": ["pebble-app"],
+  "private": true,
+  "dependencies": {},
+  "pebble": {
+    "displayName": "Template Watchface",
+    "uuid": "13371337-b7ec-4380-b131-3c9f44e2d1e4",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "basalt"
+    ],
+    "watchapp": {
+      "watchface": true
+    },
+    "messageKeys": [
+      "dummy"
+    ],
+    "resources": {
+      "media": [
+        {
+            "type": "bitmap", 
+            "name": "IMAGE_BACKGROUND", 
+            "file": "images/background.png"
+        }
+      ]
+    }
+  }
+}
