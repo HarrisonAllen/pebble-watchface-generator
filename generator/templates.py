@@ -39,8 +39,9 @@ BACKGROUND_PNG_DICT = {
 TIME_FONT_DICT = {
     'name': f'FONT_TIME_PLACEHOLDER',
     'type': 'font',
-    'file': 'font.ttf',
+    'file': 'font_time.ttf',
     'characterRegex': '[0-9:]',
+    'compatibility': '2.7'
 }
 
 DATA_DICT = {

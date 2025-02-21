@@ -64,8 +64,8 @@ class FontResourceGenerator(ResourceGenerator):
         return definitions
 
     @classmethod
-    def generate_object(cls, file_path, definition):
-        font_path = file_path
+    def generate_object(cls, platform, definition):
+        font_path = definition.file
         font_ext = os.path.splitext(font_path)[-1]
         if font_ext in (".ttf", ".otf"):
             font_data = cls.build_font_data(font_path, definition)

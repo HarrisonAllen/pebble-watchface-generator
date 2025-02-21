@@ -1,0 +1,31 @@
+{
+    "targetPlatforms": ["aplite", "basalt", "chalk", "diorite"], 
+    "displayName": "Hollow Knight - Generated", 
+    "name": "hollow-knight-generator", 
+    "messageKeys": {
+        "dummy": 10000
+    }, 
+    "companyName": "Watchface Generator", 
+    "enableMultiJS": true, 
+    "versionLabel": "1.0", 
+    "capabilities": [], 
+    "sdkVersion": "3", 
+    "appKeys": {
+        "dummy": 10000
+    }, 
+    "longName": "Hollow Knight - Generated", 
+    "shortName": "Hollow Knight - Generated", 
+    "watchapp": {
+        "watchface": true
+    }, 
+    "resources": {
+        "media": [
+            {
+                "type": "bitmap", 
+                "name": "IMAGE_BACKGROUND", 
+                "file": "images/background.png"
+            }
+        ]
+    }, 
+    "uuid": "13371337-eff3-11ef-8cc1-002b670b1da6"
+}

@@ -409,7 +409,11 @@ class Font:
         def codepoint_is_in_subset(codepoint):
            if (codepoint not in (WILDCARD_CODEPOINT, ELLIPSIS_CODEPOINT)):
               if self.regex is not None:
-                  if self.regex.match(codepoint.to_bytes(2)) is None:
+                  if codepoint > 255:
+                      cbytes = codepoint.to_bytes(2, byteorder="big")
+                  else:
+                      cbytes = codepoint.to_bytes(1, byteorder="big")
+                  if self.regex.match(cbytes) is None:
                       return False
               if codepoint not in self.codepoints:
                  return False

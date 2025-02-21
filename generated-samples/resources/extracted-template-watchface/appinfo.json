@@ -1,6 +1,9 @@
 {
     "targetPlatforms": [
-        "basalt"
+        "aplite", 
+        "basalt", 
+        "chalk", 
+        "diorite"
     ], 
     "displayName": "Template Watchface", 
     "name": "template-watchface", 
@@ -25,7 +28,14 @@
             {
                 "type": "bitmap", 
                 "name": "IMAGE_BACKGROUND", 
-                "file": "images/background.png"
+                "file": "background.png"
+            }, 
+            {
+                "characterRegex": "[0-9:]", 
+                "type": "font", 
+                "name": "FONT_TIME_52", 
+                "file": "font_time.ttf", 
+                "compatibility": "2.7"
             }
         ]
     }, 

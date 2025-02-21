@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    package_files = {}
+    package_files = []
 
     # load watchface info from designer
     watchface_info_file = os.path.join(args.resource_dir, WATCHFACE_INFO)
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     )
     with open(app_info_file, "w") as f:
         f.write(app_info_str)
-    package_files[APP_INFO] = app_info_file
+    package_files.append((APP_INFO, app_info_file))
 
     # create packages for each platform
     for platform in watchface_info['metadata']['target_platforms']:
@@ -158,14 +158,14 @@ if __name__ == "__main__":
 
         resource_data = [ # like so: (resource info dict, resource generator type)
             (background_png_dict, PngResourceGenerator),
-            # (time_font_dict, FontResourceGenerator)
+            (time_font_dict, FontResourceGenerator)
             # (data_dict, ResourceGeneratorRaw)
         ]
         
         # Generate resource pack, write to pbpack_path
         pbpack_path = os.path.join(platform_output_dir, PBPACK_FILENAME)
         resource_pack = generate_pbpack(platform, resource_data, args.resource_dir, pbpack_path)
-        package_files[PBPACK_FILENAME] = pbpack_path
+        package_files.append((PBPACK_FILENAME, pbpack_path))
 
         # Copy and update binary
         binary_source_path = os.path.join(platform_template_dir, APP_BINARY)
@@ -176,18 +176,19 @@ if __name__ == "__main__":
             write_value_at_offset(f, COMPANY_ADDR[0], COMPANY_ADDR[1], trunc_comp)
             write_value_at_offset(f, UUID_ADDR[0], UUID_ADDR[1], uuid_bytes)
             write_value_at_offset(f, RESOURCE_CRC_ADDR[0], RESOURCE_CRC_ADDR[1], resource_pack.crc)
-        package_files[APP_BINARY] = binary_copy_path
+        package_files.append((APP_BINARY, binary_copy_path))
 
         # Generate manifest, write to manifest_path
         manifest_path = os.path.join(platform_output_dir, MANIFEST_FILENAME)
         generate_manifest(binary_copy_path, pbpack_path, manifest_path)
-        package_files[MANIFEST_FILENAME] = manifest_path
+        package_files.append((MANIFEST_FILENAME, manifest_path))
+
 
     # And wrap it all into a pbw
     pbw_name = watchface_info['metadata']['name'] + '.pbw'
     pbw_path = os.path.join(args.output_dir, pbw_name)
     with zipfile.ZipFile(pbw_path, 'w') as zip_file:
-        for filename, file_path in package_files.items():
+        for filename, file_path in package_files:
             rel_path = os.path.relpath(
                 file_path, args.output_dir
             )

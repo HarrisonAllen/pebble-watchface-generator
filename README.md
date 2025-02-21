@@ -93,6 +93,7 @@ Generating (done by a script obviously, `create_watchface.py`?):
 
 As it stands, I have successfully set up `create_watchface.py` to generate a new watchface:
 * Replaces `background.png`
+* Replaces `time_font.ttf`
 * Generates all files for functioning watchface (app info, then for each platform: pbpack, manifest, app binary)
 * You will have to manually zip up the .pbw though
 
@@ -135,9 +136,9 @@ python3 create_watchface.py \
 - [x] Generate manifest
 - [x] Patch binary to work with new resource pack
 - [x] Get PNGs working
-- [ ] Get fonts working
+- [x] Get fonts working
 - [ ] Get raw data working
-- [ ] Run against multiple platforms
+- [x] Run against multiple platforms
 - [x] Read in information from json
 - [x] Update appinfo.json
     - [x] Figure out how appinfo is baked into binary and update there, too
@@ -149,8 +150,9 @@ python3 create_watchface.py \
 ### Watchface
 
 - [x] Create basic watchface with only background png
-- [ ] Add time and corresponding font
+- [x] Add time and corresponding font
 - [ ] Add raw data and update bg color, font color
+    - Load into struct? Or similar structure
 - [ ] Add all placeholder resources
 - [ ] Add template logic for all watch cases
 - [ ] And more...

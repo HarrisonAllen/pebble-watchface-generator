@@ -24,17 +24,10 @@ from pbpack import ResourcePack
 def generate_pbpack(platform, resource_data, resource_source_path, output_file):
     pack = ResourcePack(False)
 
-    definitions = []
     for rd, rt in resource_data:
         d = rt.definitions_from_dict(platform, rd, resource_source_path)[0]
-        definitions.append(d)
-
-    resources = []
-    for d in definitions:
-        resources.append(rt.generate_object(platform, d))
-
-    for r in resources:
-        pack.add_resource(r.data)
+        resource = rt.generate_object(platform, d)
+        pack.add_resource(resource.data)
 
     with open(output_file, 'wb') as f:
         pack.serialize(f)

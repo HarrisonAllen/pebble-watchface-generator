@@ -11,7 +11,10 @@
     "sdkVersion": "3",
     "enableMultiJS": true,
     "targetPlatforms": [
-      "basalt"
+      "aplite",
+      "basalt",
+      "chalk",
+      "diorite"
     ],
     "watchapp": {
       "watchface": true
@@ -24,7 +27,14 @@
         {
             "type": "bitmap", 
             "name": "IMAGE_BACKGROUND", 
-            "file": "images/background.png"
+            "file": "background.png"
+        },
+        {
+          "name": "FONT_TIME_52", 
+          "characterRegex": "[0-9:]", 
+          "file": "font_time.ttf", 
+          "type": "font", 
+          "compatibility": "2.7"
         }
       ]
     }
