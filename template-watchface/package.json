@@ -35,6 +35,11 @@
           "file": "font_time.ttf", 
           "type": "font", 
           "compatibility": "2.7"
+        },
+        {
+          "type": "raw",
+          "name": "DATA",
+          "file": "data.bin"
         }
       ]
     }

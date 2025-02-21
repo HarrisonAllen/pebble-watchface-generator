@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include "watch_data.h"
 
 #if defined(PBL_ROUND)
   #define Y_OFFSET 5
@@ -9,11 +10,23 @@
 
 static Window *s_main_window;
 
+static WatchData s_watch_data;
+
 static BitmapLayer *s_background_layer;
 static GBitmap *s_background_bitmap;
 
 static TextLayer *s_time_layer;
 static GFont s_time_font;
+
+// static bool load(WatchData *data) {
+//   return persist_read_data(SAVE_KEY, data, sizeof(PokemonSaveData)) != E_DOES_NOT_EXIST;
+// }
+
+static void load_data(WatchData *watch_data) {
+  ResHandle handle = resource_get_handle(RESOURCE_ID_DATA);
+  size_t res_size = resource_size(handle);
+  resource_load(handle, (uint8_t *)(watch_data), res_size);
+}
 
 static void update_time() {
   time_t temp = time(NULL);
@@ -36,18 +49,18 @@ static void main_window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_layer);
 
   // time
-  s_time_layer = text_layer_create(GRect(0, 2 + Y_OFFSET, bounds.size.w, 56));
+  s_time_layer = text_layer_create(GRect(s_watch_data.digital_x, s_watch_data.digital_y + Y_OFFSET, bounds.size.w, s_watch_data.digital_font_size + 4));
   // create and load time font
   s_time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_TIME_52));
   // stylize the text
   text_layer_set_background_color(s_time_layer, GColorClear);
-  text_layer_set_text_color(s_time_layer, GColorWhite);
+  text_layer_set_text_color(s_time_layer, (GColor8)((uint8_t)s_watch_data.digital_color));
   text_layer_set_font(s_time_layer, s_time_font);
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
 
   // bitmaps
   // bg
-  s_background_layer = bitmap_layer_create(GRect((bounds.size.w - 180) / 2, (bounds.size.h - 180) / 2, 180, 180));
+  s_background_layer = bitmap_layer_create(GRect(s_watch_data.background_x + (bounds.size.w - 180) / 2, s_watch_data.background_y + (bounds.size.h - 180) / 2, s_watch_data.background_width, s_watch_data.background_height));
   bitmap_layer_set_compositing_mode(s_background_layer, GCompOpSet);
   s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
   bitmap_layer_set_bitmap(s_background_layer, s_background_bitmap);
@@ -72,6 +85,7 @@ static void main_window_unload(Window *window) {
 }
 
 static void init() {
+  load_data(&s_watch_data);
   // Create main Window element and assign to pointer
   s_main_window = window_create();
 
@@ -81,7 +95,7 @@ static void init() {
     .unload = main_window_unload
   });
   
-  window_set_background_color(s_main_window, PBL_IF_BW_ELSE(GColorDarkGray, GColorBlue));
+  window_set_background_color(s_main_window, (GColor8)((uint8_t)s_watch_data.background_color));
 
   // Show the Window on the watch, with animated=true
   window_stack_push(s_main_window, true);
