@@ -9,7 +9,8 @@ This is a project for creating a watchface generator for pebble
     * [The generator](#the-generator)
 * [Current state of affairs](#current-state-of-affairs)
     * [Generated samples](#generated-samples)
-    * [Using the generator](#using-the-generator)
+    * [Using the generator (as a human)](#using-the-generator-as-a-human)
+    * [Using the generator (as a non-human)](#using-the-generator-as-a-non-human)
 * [TODOs](#todos)
     * [Generator](#generator)
     * [Watchface](#watchface)
@@ -78,7 +79,7 @@ Prerequisites:
 * a json blob of all of the required information
 * the template pbw (pre-extracted, for now)
 
-Generating (done by a script obviously, `create_watchface.py`?):
+Generating:
 1. Copy and update `appinfo.json` with the new watchface information
 2. Then for each platform in `targetPlatforms` (`aplite`, `basalt`, ...):
     1. Create a `<platform>` directory
@@ -90,8 +91,9 @@ Generating (done by a script obviously, `create_watchface.py`?):
 ## Current state of affairs
 
 As it stands, I have successfully set up `create_watchface.py` to generate a new watchface:
-* Loads in data from a configuration json
+* Takes in a string of the watch info json
     * Includes background image (base64), fonts (base64), and all of the watch data
+    * When running the script manually it accepts a json filename
 * Generates a pbpack containing all of the resources and data
 * Generates all files for functioning watchface (app info, then for each platform: pbpack, manifest, app binary)
 * Zips them all up into a pbw
@@ -102,35 +104,48 @@ The watchface is set up to work with whatever image and font are thrown at it, a
 
 ### Generated samples
 
-I've set up a few samples in `generated-samples/` that are ready to run, and can be used for testing the generator.
-* `resources` contains an extracted template watchface, and resources for the generated watchfaces
-* `horizontal-stripes`, `vertical-stripes`, `hollow-knight---generated` are generated watchfaces from the resources folder
+I've set up a few samples in `samples/` that are ready to run, and can be used for testing the generator.
+* `resources` contains an extracted template watchface, and resources for the sample watchfaces
+* `pbws` contains generated pbws based on the sample `watchface_info.json`s
 
-### Using the generator
+### Using the generator (as a human)
 
 Prereqs:
-* Use WSL (or linux idk I haven't tested anything else)
 * set up a python3 environment (i'm using 3.8, don't know how much it matters)
 * use pip to install requirements.txt
 * cd to `generator`
 
 Run it
-1. Create a `resources` directory to contain the new a modified version of `watchface_info.json`
+1. Create a modified version of `watchface_info.json`
     * The `image_data` and `font_data` should be encoded with base64
     * optional: add `uuid` to `metadata` to force a specific uuid
-2. Run ```python3 create_watchface.py <template_dir> <resource_dir> <output_dir>```
+2. Run ```python3 create_watchface.py <template_dir> <info_path> <output_dir>```
     * `<template_dir>` is the directory containing the (extracted) template pbw
-    * `<resource_dir>` is the path to the new resources (`watchface_info.json`)
-    * `<output_dir>` is the output directory, must not exist (this is by design to avoid accidentally deleting dirs while testing, would prob change that in prod)
-2. The .pbw will be in `output_dir`
+    * `<info_path>` is the path to `watchface_info.json`
+    * `<output_dir>` is the output directory for the final .pbw
+2. The .pbw will be written to `output_dir`
 
 For example:
 ```
 python3 create_watchface.py \
-   /path/to/repo/generated-samples/resources/extracted-template-watchface/
-   /path/to/repo/generated-samples/resources/horizontal-stripes/
-   /path/to/repo/generated-samples/horizontal-stripes
+    ../samples/resources/extracted-template-watchface/ \
+    ../samples/resources/hollow-knight/watchface_info.json \
+    ../samples/pbws/
 ```
+
+### Using the generator (as a non-human)
+
+Prereqs:
+* set up a python3 environment (i'm using 3.8, don't know how much it matters)
+* use pip to install requirements.txt
+
+Run it
+1. Generate a json string containing watchface info
+2. Use the function `create_watchface` with the following parameters:
+    * `watchface_info_string` - The string version of the json output
+    * `template_dir` - Where on the machine the template files are stored
+    * This generates a pbw object as bytes
+3. Either write the pbw object to disk or send it elsewhere (e.g. back to the user)
 
 ## TODOs
 
@@ -148,7 +163,8 @@ python3 create_watchface.py \
 - [x] Update appinfo.json
     - [x] Figure out how appinfo is baked into binary and update there, too
 - [x] Generate full .pbw
-    - [ ] ... without writing to disk
+    - [x] ... without writing to disk
+- [ ] Generate by loading in a template pbw rather than an extracted one
 - [x] Read png, fonts from base64 instead of file
 - [ ] Match with final template watchface, web designer
 - [ ] And more...

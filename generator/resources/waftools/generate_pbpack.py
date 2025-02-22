@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from pbpack import ResourcePack
+from io import BytesIO
 # from resources.resource_map.my_resource_generator import definitions_from_dict, generate_object
 
 # params:
@@ -20,8 +21,8 @@ from pbpack import ResourcePack
 #   resource_data: tuple of (resource dict, resource generator type)
 #   resource_source_path: resource directory
 #   output_file: where to save the pbpack
-# returns: ResourcePack
-def generate_pbpack(platform, resource_data, output_file):
+# returns: ResourcePack, byte stream
+def generate_pbpack(platform, resource_data):
     pack = ResourcePack(False)
 
     for rd, rt in resource_data:
@@ -29,7 +30,7 @@ def generate_pbpack(platform, resource_data, output_file):
         resource = rt.generate_object(platform, d)
         pack.add_resource(resource.data)
 
-    with open(output_file, 'wb') as f:
-        pack.serialize(f)
+    serialized_stream = BytesIO()
+    pack.serialize(serialized_stream)
 
-    return pack
+    return pack, serialized_stream

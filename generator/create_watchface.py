@@ -8,7 +8,7 @@ import struct
 import sys
 import uuid
 import zipfile
-from io import BytesIO
+from io import BytesIO, StringIO
 from base64 import decodebytes
 from string import Template
 from resources.waftools.generate_pbpack import generate_pbpack
@@ -37,16 +37,14 @@ RESOURCE_CRC_ADDR = (0x78, 'I') # 4 bytes
 # JSON Data placeholders
 FONT_SIZE = 52
 
-def flen(path):
-    statinfo = os.stat(path)
-    return statinfo.st_size
+def flen(byte_stream):
+    return byte_stream.getbuffer().nbytes
 
-def stm32crc(path):
-    with open(path, 'r+b') as f:
-        binfile = f.read()
-        return stm32_crc.crc32(binfile) & 0xFFFFFFFF
+def stm32crc(byte_stream):
+    binfile = byte_stream.read()
+    return stm32_crc.crc32(binfile) & 0xFFFFFFFF
     
-def generate_manifest(watchapp_path, resources_path, out_path):
+def generate_manifest(binary, resources):
     timestamp = int(time.time())
     
     manifest = {
@@ -62,20 +60,21 @@ def generate_manifest(watchapp_path, resources_path, out_path):
             "major": 5,
             "minor": 86
         },
-        'name' : os.path.basename(watchapp_path),
-        'size': flen(watchapp_path),
-        'crc': stm32crc(watchapp_path),
+        'name' : APP_BINARY,
+        'size': flen(binary),
+        'crc': stm32crc(binary),
     }
         
     manifest['resources'] = {
-        'name' : os.path.basename(resources_path),
+        'name' : PBPACK_FILENAME,
         'timestamp' : timestamp,
-        'size' : flen(resources_path),
-        'crc' : stm32crc(resources_path),
+        'size' : flen(resources),
+        'crc' : stm32crc(resources),
     }
 
-    with open(out_path, "w") as f: 
-        json.dump(manifest, f)
+    manifest_stream = StringIO()
+    json.dump(manifest, manifest_stream)
+    return manifest_stream
 
 def generate_uuid_string(base_uuid, prefix):
     uuid_str = str(base_uuid)
@@ -98,11 +97,11 @@ def convert_base64_to_bytes(data):
 def convert_name(name):
     return name.lower().replace(' ', '-')
 
-def create_watchface(watchface_info, template_dir, output_dir):
-    # clear our output directory
-    if os.path.exists(output_dir):
-        raise Exception(f'Output directory "{output_dir}" already exists! Aborting...')
-    os.makedirs(output_dir)
+def create_watchface(watchface_info_string, template_dir):
+    watchface_info = json.loads(watchface_info_string)
+
+    # filename, relpath, data stream
+    package_files = []
 
     # generate uuid try to use preexisting if exists
     data_uuid = watchface_info['metadata'].get('uuid')
@@ -118,7 +117,6 @@ def create_watchface(watchface_info, template_dir, output_dir):
     trunc_comp = bytes(truncate_to_32_bytes(watchface_info['metadata']['author']), 'UTF8')
 
     # create app_info
-    app_info_file = os.path.join(output_dir, APP_INFO)
     app_info_template = Template(APP_INFO_TEMPLATE)
     app_info_str = app_info_template.substitute(
         target_platforms=json.dumps(watchface_info['metadata']['target_platforms']),
@@ -127,9 +125,8 @@ def create_watchface(watchface_info, template_dir, output_dir):
         author=watchface_info['metadata']['author'],
         new_uuid=uuid_str
     )
-    with open(app_info_file, "w") as f:
-        f.write(app_info_str)
-    package_files.append((APP_INFO, app_info_file))
+    app_info_stream = StringIO(app_info_str)
+    package_files.append((APP_INFO, "", app_info_stream))
 
     # create packages for each platform
     for platform in watchface_info['metadata']['target_platforms']:
@@ -137,8 +134,6 @@ def create_watchface(watchface_info, template_dir, output_dir):
             raise Exception(f"Unknown platform {platform}")
         
         platform_template_dir = os.path.join(template_dir, platform)
-        platform_output_dir = os.path.join(output_dir, platform)
-        os.makedirs(platform_output_dir)
         
         # Set up resource data. These should reflect the appinfo/package.json
         background_png_dict = BACKGROUND_PNG_DICT.copy()
@@ -161,53 +156,54 @@ def create_watchface(watchface_info, template_dir, output_dir):
         ]
         
         # Generate resource pack, write to pbpack_path
-        pbpack_path = os.path.join(platform_output_dir, PBPACK_FILENAME)
-        resource_pack = generate_pbpack(platform, resource_data, pbpack_path)
-        package_files.append((PBPACK_FILENAME, pbpack_path))
+        resource_pack, pbpack_stream = generate_pbpack(platform, resource_data)
+        package_files.append((PBPACK_FILENAME, f"{platform}/", pbpack_stream))
 
         # Copy and update binary
         binary_source_path = os.path.join(platform_template_dir, APP_BINARY)
-        binary_copy_path = os.path.join(platform_output_dir, APP_BINARY)
-        shutil.copy(binary_source_path, binary_copy_path)
-        with open(binary_copy_path, "r+b") as f:
-            write_value_at_offset(f, NAME_ADDR[0], NAME_ADDR[1], trunc_name)
-            write_value_at_offset(f, COMPANY_ADDR[0], COMPANY_ADDR[1], trunc_comp)
-            write_value_at_offset(f, UUID_ADDR[0], UUID_ADDR[1], uuid_bytes)
-            write_value_at_offset(f, RESOURCE_CRC_ADDR[0], RESOURCE_CRC_ADDR[1], resource_pack.crc)
-        package_files.append((APP_BINARY, binary_copy_path))
+        with open(binary_source_path, "rb") as f:
+            binary_stream = BytesIO(f.read())
+        write_value_at_offset(binary_stream, NAME_ADDR[0], NAME_ADDR[1], trunc_name)
+        write_value_at_offset(binary_stream, COMPANY_ADDR[0], COMPANY_ADDR[1], trunc_comp)
+        write_value_at_offset(binary_stream, UUID_ADDR[0], UUID_ADDR[1], uuid_bytes)
+        write_value_at_offset(binary_stream, RESOURCE_CRC_ADDR[0], RESOURCE_CRC_ADDR[1], resource_pack.crc)
+        package_files.append((APP_BINARY, f"{platform}/", binary_stream))
 
         # Generate manifest, write to manifest_path
-        manifest_path = os.path.join(platform_output_dir, MANIFEST_FILENAME)
-        generate_manifest(binary_copy_path, pbpack_path, manifest_path)
-        package_files.append((MANIFEST_FILENAME, manifest_path))
+        manifest_stream = generate_manifest(binary_stream, pbpack_stream)
+        package_files.append((MANIFEST_FILENAME, f"{platform}/", manifest_stream))
 
 
     # And wrap it all into a pbw
     pbw_name = convert_name(watchface_info['metadata']['name']) + '.pbw'
-    pbw_path = os.path.join(output_dir, pbw_name)
-    with zipfile.ZipFile(pbw_path, 'w') as zip_file:
-        for filename, file_path in package_files:
-            rel_path = os.path.relpath(
-                file_path, output_dir
-            )
-            zip_file.write(file_path, rel_path)
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+        for filename, rel_path, data_stream in package_files:
+            file_path = os.path.join(rel_path, filename)
+            zip_file.writestr(file_path, data_stream.getvalue())
         zip_file.comment = bytes(pbw_name, "UTF-8")
+
+    return zip_buffer.getvalue(), pbw_name
 
         
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='generate pbpack and manifest')
 
     parser.add_argument('template_dir', help='path to template application')
-    parser.add_argument('resource_dir', help='path to resources')
-    parser.add_argument('output_dir', help='path to output')
+    parser.add_argument('info_path', help='path to watchface_info.json')
+    parser.add_argument('output_dir', help='path to output directory')
 
     args = parser.parse_args()
 
-    package_files = []
-
     # load watchface info from designer
-    watchface_info_file = os.path.join(args.resource_dir, WATCHFACE_INFO)
-    with open(watchface_info_file, 'r') as f:
-        watchface_info = json.load(f)
+    with open(args.info_path, 'r') as f:
+        watchface_info_string = f.read()
+    
+    # set up output directory
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
 
-    create_watchface(watchface_info, args.template_dir, args.output_dir)
+    pbw, pbw_name = create_watchface(watchface_info_string, args.template_dir)
+    
+    with open(os.path.join(args.output_dir, pbw_name), 'wb') as f:
+        f.write(pbw)
