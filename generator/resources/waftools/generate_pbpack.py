@@ -21,11 +21,11 @@ from pbpack import ResourcePack
 #   resource_source_path: resource directory
 #   output_file: where to save the pbpack
 # returns: ResourcePack
-def generate_pbpack(platform, resource_data, resource_source_path, output_file):
+def generate_pbpack(platform, resource_data, output_file):
     pack = ResourcePack(False)
 
     for rd, rt in resource_data:
-        d = rt.definitions_from_dict(platform, rd, resource_source_path)[0]
+        d = rt.definitions_from_dict(platform, rd)[0]
         resource = rt.generate_object(platform, d)
         pack.add_resource(resource.data)
 

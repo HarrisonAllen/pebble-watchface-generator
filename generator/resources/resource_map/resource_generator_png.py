@@ -26,6 +26,6 @@ class PngResourceGenerator(ResourceGenerator):
     def generate_object(platform, definition):
         is_color = 'color' in pebble_platforms[platform]['TAGS']
         palette_name = png2pblpng.get_ideal_palette(is_color=is_color)
-        image_bytes = png2pblpng.convert_png_to_pebble_png_bytes(definition.file,
+        image_bytes = png2pblpng.convert_png_to_pebble_png_bytes(definition.data,
                                                                  palette_name)
         return ResourceObject(definition, image_bytes)

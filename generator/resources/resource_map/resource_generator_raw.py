@@ -19,17 +19,5 @@ class ResourceGeneratorRaw(ResourceGenerator):
     type = 'raw'
     
     @staticmethod
-    def definitions_from_dict(platform, definition_dict, resource_source_path):
-        definitions = ResourceGenerator.definitions_from_dict(platform,
-                                                              definition_dict,
-                                                              resource_source_path)
-
-        # Parse additional raw data specific fields
-        for d in definitions:
-            d.data = definition_dict.get('data')
-
-        return definitions
-
-    @staticmethod
     def generate_object(platform, definition):
         return ResourceObject(definition, definition.data.getvalue())

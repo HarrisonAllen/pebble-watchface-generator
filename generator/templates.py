@@ -5,7 +5,7 @@ APP_INFO_TEMPLATE = '''{
     "messageKeys": {
         "dummy": 10000
     }, 
-    "companyName": "$company_name", 
+    "companyName": "$author", 
     "enableMultiJS": true, 
     "versionLabel": "1.0", 
     "capabilities": [], 
@@ -33,13 +33,11 @@ APP_INFO_TEMPLATE = '''{
 BACKGROUND_PNG_DICT = {
     'name': 'IMAGE_BACKGROUND',
     'type': 'png',
-    'file': 'background.png',
 }
 
 TIME_FONT_DICT = {
     'name': f'FONT_TIME_PLACEHOLDER',
     'type': 'font',
-    'file': 'font_time.ttf',
     'characterRegex': '[0-9:]',
     'compatibility': '2.7'
 }
@@ -47,5 +45,4 @@ TIME_FONT_DICT = {
 DATA_DICT = {
     'name': 'DATA',
     'type': 'raw',
-    'file': 'data.bin',
 }

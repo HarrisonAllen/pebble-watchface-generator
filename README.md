@@ -49,15 +49,14 @@ The watchface needs to be compiled into a .pbw for modification
 This is more WillO's wheelhouse, but it's a web interface for designing the watchface. Spits out a json blob with info.
 
 What I want out of this blob:
-* .png for the background
+* .png for the background in base64
     * or multiple pngs if the designer creates one for each platform, e.g. doing automatic grayscale dithering
-* .ttf for each of the fonts
-* Data for alllll of the customization (could be converted into binary file on web or in generator, tbd)
+* .ttf for each of the fonts in base64
+* Parameters for alllll of the customization
 * New appinfo:
     * targetPlatforms
-    * displayName
     * name
-    * companyName 
+    * author 
     * uuid (optional, omit to autogenerate for updating existing watchfaces, starts with `13371337`)
 
 ### The generator
@@ -76,7 +75,6 @@ Most of the code is derived from [pebble-firmware](https://github.com/pebble-dev
 #### The generation process
 
 Prerequisites:
-* a directory with the new assets
 * a json blob of all of the required information
 * the template pbw (pre-extracted, for now)
 
@@ -92,16 +90,21 @@ Generating (done by a script obviously, `create_watchface.py`?):
 ## Current state of affairs
 
 As it stands, I have successfully set up `create_watchface.py` to generate a new watchface:
-* Replaces `background.png`
-* Replaces `time_font.ttf`
+* Loads in data from a configuration json
+    * Includes background image (base64), fonts (base64), and all of the watch data
+* Generates a pbpack containing all of the resources and data
 * Generates all files for functioning watchface (app info, then for each platform: pbpack, manifest, app binary)
-* You will have to manually zip up the .pbw though
+* Zips them all up into a pbw
+
+The watchface is set up to work with whatever image and font are thrown at it, and actively works with the following:
+* Background information (image, color, x, y, width, height)
+* Digital clock information (font size, color, x, y)
 
 ### Generated samples
 
 I've set up a few samples in `generated-samples/` that are ready to run, and can be used for testing the generator.
-* `resources` contains an extracted template watchface, and resources for the two generated watchfaces
-* `horizontal-stripes` and `vertical-stripes` are generated watchfaces from the resources folder
+* `resources` contains an extracted template watchface, and resources for the generated watchfaces
+* `horizontal-stripes`, `vertical-stripes`, `hollow-knight---generated` are generated watchfaces from the resources folder
 
 ### Using the generator
 
@@ -112,12 +115,14 @@ Prereqs:
 * cd to `generator`
 
 Run it
-1. Create a `resources` directory to contain the new `background.png` (can have one for each platform) and a modified version of `watchface_info.json` (optional: add `uuid` to `metadata`)
+1. Create a `resources` directory to contain the new a modified version of `watchface_info.json`
+    * The `image_data` and `font_data` should be encoded with base64
+    * optional: add `uuid` to `metadata` to force a specific uuid
 2. Run ```python3 create_watchface.py <template_dir> <resource_dir> <output_dir>```
     * `<template_dir>` is the directory containing the (extracted) template pbw
-    * `<resource_dir>` is the path to the new resources (`background.png`, `watchface_info.json`, ...)
+    * `<resource_dir>` is the path to the new resources (`watchface_info.json`)
     * `<output_dir>` is the output directory, must not exist (this is by design to avoid accidentally deleting dirs while testing, would prob change that in prod)
-2. The .pbw will be in `output_dir` with the name provided under `metadata`:`name` in your `watchface_info.json`
+2. The .pbw will be in `output_dir`
 
 For example:
 ```
@@ -144,7 +149,8 @@ python3 create_watchface.py \
     - [x] Figure out how appinfo is baked into binary and update there, too
 - [x] Generate full .pbw
     - [ ] ... without writing to disk
-- [ ] Match with final template watchface, web designer (update binary file, etc.)
+- [x] Read png, fonts from base64 instead of file
+- [ ] Match with final template watchface, web designer
 - [ ] And more...
 
 ### Watchface

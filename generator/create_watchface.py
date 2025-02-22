@@ -8,6 +8,8 @@ import struct
 import sys
 import uuid
 import zipfile
+from io import BytesIO
+from base64 import decodebytes
 from string import Template
 from resources.waftools.generate_pbpack import generate_pbpack
 from resources.resource_map.resource_generator_png import PngResourceGenerator
@@ -90,26 +92,17 @@ def write_value_at_offset(opened_file, offset, format_str, value):
     opened_file.seek(offset)
     opened_file.write(struct.pack(format_str, value))
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='generate pbpack and manifest')
+def convert_base64_to_bytes(data):
+    return BytesIO(decodebytes(bytes(data, "utf-8")))
 
-    parser.add_argument('template_dir', help='path to template application')
-    parser.add_argument('resource_dir', help='path to resources')
-    parser.add_argument('output_dir', help='path to output')
+def convert_name(name):
+    return name.lower().replace(' ', '-')
 
-    args = parser.parse_args()
-
-    package_files = []
-
-    # load watchface info from designer
-    watchface_info_file = os.path.join(args.resource_dir, WATCHFACE_INFO)
-    with open(watchface_info_file, 'r') as f:
-        watchface_info = json.load(f)
-
+def create_watchface(watchface_info, template_dir, output_dir):
     # clear our output directory
-    if os.path.exists(args.output_dir):
-        raise Exception(f'Output directory "{args.output_dir}" already exists! Aborting...')
-    os.makedirs(args.output_dir)
+    if os.path.exists(output_dir):
+        raise Exception(f'Output directory "{output_dir}" already exists! Aborting...')
+    os.makedirs(output_dir)
 
     # generate uuid try to use preexisting if exists
     data_uuid = watchface_info['metadata'].get('uuid')
@@ -121,17 +114,17 @@ if __name__ == "__main__":
     uuid_bytes = generate_uuid_bytes(base_uuid, GENERATED_UUID_PREFIX_BYTES)
 
     # setup names
-    trunc_name = bytes(truncate_to_32_bytes(watchface_info['metadata']['display_name']), 'UTF8')
-    trunc_comp = bytes(truncate_to_32_bytes(watchface_info['metadata']['company_name']), 'UTF8')
+    trunc_name = bytes(truncate_to_32_bytes(watchface_info['metadata']['name']), 'UTF8')
+    trunc_comp = bytes(truncate_to_32_bytes(watchface_info['metadata']['author']), 'UTF8')
 
     # create app_info
-    app_info_file = os.path.join(args.output_dir, APP_INFO)
+    app_info_file = os.path.join(output_dir, APP_INFO)
     app_info_template = Template(APP_INFO_TEMPLATE)
     app_info_str = app_info_template.substitute(
         target_platforms=json.dumps(watchface_info['metadata']['target_platforms']),
-        display_name=watchface_info['metadata']['display_name'],
-        name=watchface_info['metadata']['name'],
-        company_name=watchface_info['metadata']['company_name'],
+        display_name=watchface_info['metadata']['name'],
+        name=convert_name(watchface_info['metadata']['name']),
+        author=watchface_info['metadata']['author'],
         new_uuid=uuid_str
     )
     with open(app_info_file, "w") as f:
@@ -143,16 +136,18 @@ if __name__ == "__main__":
         if not platform in ('aplite', 'basalt', 'chalk', 'diorite', 'emery'):
             raise Exception(f"Unknown platform {platform}")
         
-        platform_template_dir = os.path.join(args.template_dir, platform)
-        platform_output_dir = os.path.join(args.output_dir, platform)
+        platform_template_dir = os.path.join(template_dir, platform)
+        platform_output_dir = os.path.join(output_dir, platform)
         os.makedirs(platform_output_dir)
         
         # Set up resource data. These should reflect the appinfo/package.json
         background_png_dict = BACKGROUND_PNG_DICT.copy()
+        background_png_dict['data'] = convert_base64_to_bytes(watchface_info["customization"]["background"]["image_data"]).getvalue()
         background_png_dict['targetPlatforms'] = platform
 
         time_font_dict = TIME_FONT_DICT.copy()
         time_font_dict['name'] = f'FONT_TIME_{watchface_info["customization"]["clocks"]["digital"]["font_size"]}'
+        time_font_dict['data'] = convert_base64_to_bytes(watchface_info["customization"]["clocks"]["digital"]["font_data"])
         time_font_dict['targetPlatforms'] = platform
 
         data_dict = DATA_DICT.copy()
@@ -167,7 +162,7 @@ if __name__ == "__main__":
         
         # Generate resource pack, write to pbpack_path
         pbpack_path = os.path.join(platform_output_dir, PBPACK_FILENAME)
-        resource_pack = generate_pbpack(platform, resource_data, args.resource_dir, pbpack_path)
+        resource_pack = generate_pbpack(platform, resource_data, pbpack_path)
         package_files.append((PBPACK_FILENAME, pbpack_path))
 
         # Copy and update binary
@@ -188,12 +183,31 @@ if __name__ == "__main__":
 
 
     # And wrap it all into a pbw
-    pbw_name = watchface_info['metadata']['name'] + '.pbw'
-    pbw_path = os.path.join(args.output_dir, pbw_name)
+    pbw_name = convert_name(watchface_info['metadata']['name']) + '.pbw'
+    pbw_path = os.path.join(output_dir, pbw_name)
     with zipfile.ZipFile(pbw_path, 'w') as zip_file:
         for filename, file_path in package_files:
             rel_path = os.path.relpath(
-                file_path, args.output_dir
+                file_path, output_dir
             )
             zip_file.write(file_path, rel_path)
         zip_file.comment = bytes(pbw_name, "UTF-8")
+
+        
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='generate pbpack and manifest')
+
+    parser.add_argument('template_dir', help='path to template application')
+    parser.add_argument('resource_dir', help='path to resources')
+    parser.add_argument('output_dir', help='path to output')
+
+    args = parser.parse_args()
+
+    package_files = []
+
+    # load watchface info from designer
+    watchface_info_file = os.path.join(args.resource_dir, WATCHFACE_INFO)
+    with open(watchface_info_file, 'r') as f:
+        watchface_info = json.load(f)
+
+    create_watchface(watchface_info, args.template_dir, args.output_dir)

@@ -34,10 +34,9 @@ class FontResourceGenerator(ResourceGenerator):
     lock = Lock()
 
     @staticmethod
-    def definitions_from_dict(platform, definition_dict, resource_source_path):
+    def definitions_from_dict(platform, definition_dict):
         definitions = ResourceGenerator.definitions_from_dict(platform,
-                                                              definition_dict,
-                                                              resource_source_path)
+                                                              definition_dict)
 
         # Parse additional font specific fields
         ''' e.g.
@@ -65,19 +64,12 @@ class FontResourceGenerator(ResourceGenerator):
 
     @classmethod
     def generate_object(cls, platform, definition):
-        font_path = definition.file
-        font_ext = os.path.splitext(font_path)[-1]
-        if font_ext in (".ttf", ".otf"):
-            font_data = cls.build_font_data(font_path, definition)
-        elif font_ext == ".pbf":
-            font_data = open(font_path, "rb").read()
-        else:
-            raise Exception(f"Unsupported font format: {font_ext}")
+        font_data = cls.build_font_data(definition.data, definition)
 
         return ResourceObject(definition, font_data)
 
     @classmethod
-    def build_font_data(cls, ttf_path, definition):
+    def build_font_data(cls, data, definition):
         # PBL-23964: it turns out that font generation is not thread-safe with freetype
         # 2.4 (and possibly later versions). To avoid running into this, we use a lock.
         with cls.lock:
@@ -85,7 +77,7 @@ class FontResourceGenerator(ResourceGenerator):
             is_legacy = definition.compatibility == "2.7"
             max_glyphs = MAX_GLYPHS_EXTENDED if definition.extended else MAX_GLYPHS
 
-            font = Font(ttf_path, height, max_glyphs, definition.max_glyph_size, is_legacy)
+            font = Font(data, height, max_glyphs, definition.max_glyph_size, is_legacy)
 
             if definition.character_regex is not None:
                 font.set_regex_filter(definition.character_regex.encode('utf8'))

@@ -35,15 +35,16 @@ class ResourceGeneratorMetaclass(type):
 ResourceGeneratorBase = ResourceGeneratorMetaclass('ResourceGenerator', (object,), {})
 
 
+# Take in platform (str, "aplite" etc.), definition_dict (dict of definitions), data as bytes
 class ResourceGenerator(ResourceGeneratorBase):
     @staticmethod
-    def definitions_from_dict(platform, definition_dict, resource_source_path):
+    def definitions_from_dict(platform, definition_dict):
         """
         Default implementation of definitions_from_dict. Subclasses of ResourceGenerator can
         override this implementation if they'd like to customize this. Returns a list of definitions.
         """
         resource = {'name': definition_dict['name'],
-                    'filename': str(definition_dict['file'] if 'file' in definition_dict else None)}
+                    'data': definition_dict['data']}
         resources = [resource]
 
         # Now generate ResourceDefintion objects for each resource
@@ -52,16 +53,10 @@ class ResourceGenerator(ResourceGeneratorBase):
 
         definitions = []
         for r in resources:
-            if resource['filename'] is not None:
-                filename_path = os.path.join(resource_source_path, r['filename'])
-                filename_path = find_most_specific_filename(platform, resource_source_path, filename_path)
-            else:
-                filename_path = ''
-
             storage = StorageType.pbpack
 
             d = ResourceDefinition(definition_dict['type'], r['name'],
-                                   filename_path, storage=storage,
+                                   r['data'], storage=storage,
                                    target_platforms=target_platforms,
                                    aliases=aliases)
 
@@ -74,17 +69,8 @@ class ResourceGenerator(ResourceGeneratorBase):
         return definitions
 
     @classmethod
-    def generate_object(cls, file_path, definition):
+    def generate_object(cls, platform, definition):
         """
         Stub implementation of generate_object. Subclasses must override this method.
         """
         raise NotImplemented('%r missing a generate_object implementation' % cls)
-
-def definitions_from_dict(platform, definition_dict, resource_source_path):
-    cls = _ResourceGenerators[definition_dict['type']]
-    return cls.definitions_from_dict(platform, definition_dict, resource_source_path)
-
-def generate_object(platform, definition):
-    cls = _ResourceGenerators[definition.type]
-    return cls.generate_object(platform, definition)
-

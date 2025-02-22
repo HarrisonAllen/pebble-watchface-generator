@@ -28,7 +28,7 @@ SUPPORTED_PALETTES = ('pebble2', 'pebble64')
 DEFAULT_COLOR_REDUCTION = NEAREST
 
 # Public APIs
-def convert_png_to_pebble_png(input_filename, output_filename,
+def convert_png_to_pebble_png(data, output_filename,
                               palette_name, color_reduction_method=DEFAULT_COLOR_REDUCTION,
                               bitdepth=None):
     """
@@ -36,13 +36,13 @@ def convert_png_to_pebble_png(input_filename, output_filename,
     """
 
     output_png_writer, image_data = _convert_png_to_pebble_png_writer(
-        input_filename, palette_name, color_reduction_method, force_bitdepth=bitdepth)
+        data, palette_name, color_reduction_method, force_bitdepth=bitdepth)
 
     with open(output_filename, 'wb') as output_file:
         output_png_writer.write_array(output_file, image_data)
 
 
-def convert_png_to_pebble_png_bytes(input_filename, palette_name,
+def convert_png_to_pebble_png_bytes(data, palette_name,
                                     color_reduction_method=DEFAULT_COLOR_REDUCTION,
                                     bitdepth=None):
     """
@@ -50,7 +50,7 @@ def convert_png_to_pebble_png_bytes(input_filename, palette_name,
     """
 
     output_png, image_data = _convert_png_to_pebble_png_writer(
-        input_filename, palette_name, color_reduction_method, force_bitdepth=bitdepth)
+        data, palette_name, color_reduction_method, force_bitdepth=bitdepth)
 
     output_str = BytesIO()
     output_png.write_array(output_str, image_data)
@@ -59,9 +59,9 @@ def convert_png_to_pebble_png_bytes(input_filename, palette_name,
 
 
 # Implementation
-def _convert_png_to_pebble_png_writer(input_filename, palette_name, color_reduction_method,
+def _convert_png_to_pebble_png_writer(data, palette_name, color_reduction_method,
                                       force_bitdepth=None):
-    input_png = png.Reader(filename=input_filename)
+    input_png = png.Reader(bytes=data)
 
     # sbit breaks pypngs convert_rgb_to_rgba routine
     # and is unnecessary, as it is only an optional optimization
@@ -77,7 +77,7 @@ def _convert_png_to_pebble_png_writer(input_filename, palette_name, color_reduct
 
     color_reduction_func = pebble_image_routines.get_reduction_func(palette_name,
                                                                     color_reduction_method)
-    is_grey, has_alpha, bitdepth, palette = get_palette_for_png(input_filename,
+    is_grey, has_alpha, bitdepth, palette = get_palette_for_png(data,
                                                                 palette_name,
                                                                 color_reduction_method)
 
@@ -138,8 +138,8 @@ def _convert_png_to_pebble_png_writer(input_filename, palette_name, color_reduct
     return (output_png, image)
 
 
-def get_palette_for_png(input_filename, palette_name, color_reduction_method):
-    input_png = png.Reader(filename=input_filename)
+def get_palette_for_png(data, palette_name, color_reduction_method):
+    input_png = png.Reader(bytes=data)
 
     # sbit breaks pypngs convert_rgb_to_rgba routine
     # and is unnecessary, as it is only an optional optimization

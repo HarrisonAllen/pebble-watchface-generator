@@ -24,20 +24,18 @@ class StorageType(object):
 
 
 class ResourceDefinition(ResourceDeclaration):
-    def __init__(self, type, name, file, storage=StorageType.pbpack,
+    def __init__(self, type, name, data, storage=StorageType.pbpack,
                  target_platforms=None, aliases=()):
         self.type = type
         self.name = name
 
-        self.file = file
+        self.data = data
 
         self.storage = storage
 
         # A list of platforms this resource is valid for. None means all platforms. [] means none.
         self.target_platforms = target_platforms
         self.aliases = list(aliases)
-
-        self.sources = [self.file]
 
     def is_in_target_platform(self, bld):
         if self.target_platforms is None:
