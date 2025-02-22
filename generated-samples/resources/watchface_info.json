@@ -12,7 +12,7 @@
     },
     "customization": {
         "background": {
-            "colour": "0xFFFFF",
+            "colour": "#FFFFF",
             "x": 0,
             "y": 0,
             "width": 180,
@@ -25,12 +25,12 @@
                 "y": 84,
                 "second_hand": false,
                 "pips": false,
-                "hands_colour": ""
+                "hands_colour": "#000000"
             },
             "digital": {
                 "enabled": true,
                 "font_size": 52,
-                "colour": "0x000000",
+                "colour": "#000000",
                 "x": 50,
                 "y": 20
             }

@@ -137,7 +137,7 @@ python3 create_watchface.py \
 - [x] Patch binary to work with new resource pack
 - [x] Get PNGs working
 - [x] Get fonts working
-- [ ] Get raw data working
+- [x] Get raw data working
 - [x] Run against multiple platforms
 - [x] Read in information from json
 - [x] Update appinfo.json
@@ -151,8 +151,7 @@ python3 create_watchface.py \
 
 - [x] Create basic watchface with only background png
 - [x] Add time and corresponding font
-- [ ] Add raw data and update bg color, font color
-    - Load into struct? Or similar structure
+- [x] Add raw data and update bg color, font color
 - [ ] Add all placeholder resources
 - [ ] Add template logic for all watch cases
 - [ ] And more...

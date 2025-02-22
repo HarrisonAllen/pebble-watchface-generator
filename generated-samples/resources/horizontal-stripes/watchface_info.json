@@ -10,17 +10,28 @@
     },
     "customization": {
         "background": {
-            "color": [255, 255, 255],
+            "colour": "#FFFFF",
             "x": 0,
             "y": 0,
             "width": 180,
             "height": 180
         },
-        "time": {
-            "font_size": 52,
-            "color": [0, 0, 0],
-            "x": 50,
-            "y": 20
+        "clocks": {
+            "analogue": {
+                "enabled": false,
+                "x": 72,
+                "y": 84,
+                "second_hand": false,
+                "pips": false,
+                "hands_colour": "#000000"
+            },
+            "digital": {
+                "enabled": true,
+                "font_size": 52,
+                "colour": "#000000",
+                "x": 0,
+                "y": 0
+            }
         }
     }
 }

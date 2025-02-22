@@ -14,6 +14,7 @@ from resources.resource_map.resource_generator_png import PngResourceGenerator
 from resources.resource_map.resource_generator_font import FontResourceGenerator
 from resources.resource_map.resource_generator_raw import ResourceGeneratorRaw
 from templates import *
+from convert_config import convert_config
 
 PBPACK_FILENAME = "app_resources.pbpack"
 GENERATOR_NAME = "WatchfaceGenerator"
@@ -52,6 +53,7 @@ def generate_manifest(watchapp_path, resources_path, out_path):
         'generatedBy' : GENERATOR_NAME,
         'debug' : {},
     }
+
     manifest['application'] = {
         'timestamp': timestamp,
         'sdk_version': {
@@ -150,16 +152,17 @@ if __name__ == "__main__":
         background_png_dict['targetPlatforms'] = platform
 
         time_font_dict = TIME_FONT_DICT.copy()
-        time_font_dict['name'] = f'FONT_TIME_{watchface_info["customization"]["time"]["font_size"]}'
+        time_font_dict['name'] = f'FONT_TIME_{watchface_info["customization"]["clocks"]["digital"]["font_size"]}'
         time_font_dict['targetPlatforms'] = platform
 
         data_dict = DATA_DICT.copy()
+        data_dict['data'] = convert_config(watchface_info['customization'])
         data_dict['targetPlatforms'] = platform
 
         resource_data = [ # like so: (resource info dict, resource generator type)
             (background_png_dict, PngResourceGenerator),
-            (time_font_dict, FontResourceGenerator)
-            # (data_dict, ResourceGeneratorRaw)
+            (time_font_dict, FontResourceGenerator),
+            (data_dict, ResourceGeneratorRaw)
         ]
         
         # Generate resource pack, write to pbpack_path

@@ -3,6 +3,7 @@
 
 #include <pebble.h>
 
+// All data is 2 bytes because differing lengths of data add unknown padding to the struct
 typedef struct {
     // Background data
     uint16_t background_color;
