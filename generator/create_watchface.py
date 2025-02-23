@@ -136,6 +136,7 @@ def create_watchface(watchface_info_string, template_pbw_stream):
             raise ValueError(f"Unknown platform {platform}")
         
         # Set up resource data. These should reflect the appinfo/package.json
+        # background png resource
         background_png_dict = BACKGROUND_PNG_DICT.copy()
         background_png_dict['data'] = convert_base64_to_bytes(get_bw_or_color(watchface_info["customization"]["background"], platform, "image_data")).getvalue()
         if platform in ('aplite', 'diorite') and "bw_image_data" in watchface_info["customization"]["background"]:
@@ -144,11 +145,25 @@ def create_watchface(watchface_info_string, template_pbw_stream):
             background_png_dict['data'] = convert_base64_to_bytes(watchface_info["customization"]["background"]["image_data"]).getvalue()
         background_png_dict['targetPlatforms'] = platform
 
+        # Time font resource
         time_font_dict = TIME_FONT_DICT.copy()
         time_font_dict['name'] = f'FONT_TIME_{watchface_info["customization"]["clocks"]["digital"]["font_size"]}'
         time_font_dict['data'] = convert_base64_to_bytes(watchface_info["customization"]["clocks"]["digital"]["font_data"])
         time_font_dict['targetPlatforms'] = platform
 
+        # Date font resource
+        date_font_dict = DATE_FONT_DICT.copy()
+        date_font_dict['name'] = f'FONT_DATE_{watchface_info["customization"]["date"]["font_size"]}'
+        date_font_dict['data'] = convert_base64_to_bytes(watchface_info["customization"]["date"]["font_data"])
+        date_font_dict['targetPlatforms'] = platform
+
+        # Text font resource
+        text_font_dict = DATE_FONT_DICT.copy()
+        text_font_dict['name'] = f'FONT_TEXT_{watchface_info["customization"]["text"]["font_size"]}'
+        text_font_dict['data'] = convert_base64_to_bytes(watchface_info["customization"]["text"]["font_data"])
+        text_font_dict['targetPlatforms'] = platform
+
+        # Raw Data resource
         data_dict = DATA_DICT.copy()
         data_dict['data'] = convert_config(watchface_info['customization'], platform)
         data_dict['targetPlatforms'] = platform
@@ -156,6 +171,8 @@ def create_watchface(watchface_info_string, template_pbw_stream):
         resource_data = [ # like so: (resource info dict, resource generator type)
             (background_png_dict, PngResourceGenerator),
             (time_font_dict, FontResourceGenerator),
+            (date_font_dict, FontResourceGenerator),
+            (text_font_dict, FontResourceGenerator),
             (data_dict, ResourceGeneratorRaw)
         ]
         

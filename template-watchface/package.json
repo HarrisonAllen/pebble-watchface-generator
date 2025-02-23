@@ -33,8 +33,17 @@
           "name": "FONT_TIME_52", 
           "characterRegex": "[0-9:]", 
           "file": "font_time.ttf", 
-          "type": "font", 
-          "compatibility": "2.7"
+          "type": "font"
+        },
+        {
+          "name": "FONT_DATE_32",
+          "file": "font_date.ttf", 
+          "type": "font"
+        },
+        {
+          "name": "FONT_TEXT_20",
+          "file": "font_text.ttf", 
+          "type": "font"
         },
         {
           "type": "raw",

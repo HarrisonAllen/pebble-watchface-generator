@@ -41,6 +41,16 @@ TIME_FONT_DICT = {
     'characterRegex': '[0-9:]'
 }
 
+DATE_FONT_DICT = {
+    'name': f'FONT_DATE_PLACEHOLDER',
+    'type': 'font'
+}
+
+TEXT_FONT_DICT = {
+    'name': f'FONT_DATE_PLACEHOLDER',
+    'type': 'font'
+}
+
 DATA_DICT = {
     'name': 'DATA',
     'type': 'raw',
