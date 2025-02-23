@@ -1,6 +1,8 @@
 from io import BytesIO
 from pebble_image_routines import nearest_color_to_pebble64_palette, rgba32_triplet_to_argb8
 
+BW_PREFIX = "bw_"
+
 def int_to_bytes(value):
     return value.to_bytes(2, "little")
 
@@ -16,12 +18,20 @@ def color_to_bytes(color):
     rgba = rgba32_triplet_to_argb8(r, g, b, a)
     return int_to_bytes(rgba)
 
+
+def get_bw_or_color(data, platform, base_key):
+    bw_key = BW_PREFIX + base_key
+    if platform in ('aplite', 'diorite') and bw_key in data:
+        return data[bw_key]
+    return data[base_key]
+
+
 # returns byte array
-def convert_config(conf):
+def convert_config(conf, platform):
     conf_buffer = BytesIO()
     # Background
     bg_conf = conf["background"]
-    conf_buffer.write(color_to_bytes(bg_conf["colour"]))
+    conf_buffer.write(color_to_bytes(get_bw_or_color(bg_conf, platform, "colour")))
     conf_buffer.write(int_to_bytes(bg_conf["x"]))
     conf_buffer.write(int_to_bytes(bg_conf["y"]))
     conf_buffer.write(int_to_bytes(bg_conf["width"]))
@@ -36,12 +46,12 @@ def convert_config(conf):
     conf_buffer.write(int_to_bytes(ana_conf["y"]))
     conf_buffer.write(int_to_bytes(int(ana_conf["second_hand"])))
     conf_buffer.write(int_to_bytes(int(ana_conf["pips"])))
-    conf_buffer.write(color_to_bytes(ana_conf["hands_colour"]))
+    conf_buffer.write(color_to_bytes(get_bw_or_color(ana_conf, platform, "hands_colour")))
     # - Digital
     dig_conf = clock_conf["digital"]
     conf_buffer.write(int_to_bytes(int(dig_conf["enabled"])))
     conf_buffer.write(int_to_bytes(dig_conf["font_size"]))
-    conf_buffer.write(color_to_bytes(dig_conf["colour"]))
+    conf_buffer.write(color_to_bytes(get_bw_or_color(dig_conf, platform, "colour")))
     conf_buffer.write(int_to_bytes(dig_conf["x"]))
     conf_buffer.write(int_to_bytes(dig_conf["y"]))
 

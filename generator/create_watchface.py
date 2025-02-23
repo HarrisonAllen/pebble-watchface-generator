@@ -16,7 +16,7 @@ from resources.resource_map.resource_generator_png import PngResourceGenerator
 from resources.resource_map.resource_generator_font import FontResourceGenerator
 from resources.resource_map.resource_generator_raw import ResourceGeneratorRaw
 from templates import *
-from convert_config import convert_config
+from convert_config import convert_config, get_bw_or_color
 
 PBPACK_FILENAME = "app_resources.pbpack"
 GENERATOR_NAME = "WatchfaceGenerator"
@@ -133,11 +133,15 @@ def create_watchface(watchface_info_string, template_pbw_stream):
     # create packages for each platform
     for platform in watchface_info['metadata']['target_platforms']:
         if not platform in ('aplite', 'basalt', 'chalk', 'diorite', 'emery'):
-            raise Exception(f"Unknown platform {platform}")
+            raise ValueError(f"Unknown platform {platform}")
         
         # Set up resource data. These should reflect the appinfo/package.json
         background_png_dict = BACKGROUND_PNG_DICT.copy()
-        background_png_dict['data'] = convert_base64_to_bytes(watchface_info["customization"]["background"]["image_data"]).getvalue()
+        background_png_dict['data'] = convert_base64_to_bytes(get_bw_or_color(watchface_info["customization"]["background"], platform, "image_data")).getvalue()
+        if platform in ('aplite', 'diorite') and "bw_image_data" in watchface_info["customization"]["background"]:
+            background_png_dict['data'] = convert_base64_to_bytes(watchface_info["customization"]["background"]["bw_image_data"]).getvalue()
+        else:
+            background_png_dict['data'] = convert_base64_to_bytes(watchface_info["customization"]["background"]["image_data"]).getvalue()
         background_png_dict['targetPlatforms'] = platform
 
         time_font_dict = TIME_FONT_DICT.copy()
@@ -146,7 +150,7 @@ def create_watchface(watchface_info_string, template_pbw_stream):
         time_font_dict['targetPlatforms'] = platform
 
         data_dict = DATA_DICT.copy()
-        data_dict['data'] = convert_config(watchface_info['customization'])
+        data_dict['data'] = convert_config(watchface_info['customization'], platform)
         data_dict['targetPlatforms'] = platform
 
         resource_data = [ # like so: (resource info dict, resource generator type)

@@ -54,6 +54,7 @@ What I want out of this blob:
     * or multiple pngs if the designer creates one for each platform, e.g. doing automatic grayscale dithering
 * .ttf for each of the fonts in base64
 * Parameters for alllll of the customization
+    * Anything in color can have an additional, optional "bw_" prefix to generate differently for black and white pebbles
 * New appinfo:
     * targetPlatforms
     * name
