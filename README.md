@@ -77,9 +77,9 @@ Most of the code is derived from [pebble-firmware](https://github.com/pebble-dev
 
 Prerequisites:
 * a json blob of all of the required information
-* the template pbw (pre-extracted, for now)
+* the template pbw
 
-Generating:
+The core generation logic:
 1. Copy and update `appinfo.json` with the new watchface information
 2. Then for each platform in `targetPlatforms` (`aplite`, `basalt`, ...):
     1. Create a `<platform>` directory
@@ -94,6 +94,7 @@ As it stands, I have successfully set up `create_watchface.py` to generate a new
 * Takes in a string of the watch info json
     * Includes background image (base64), fonts (base64), and all of the watch data
     * When running the script manually it accepts a json filename
+* Takes in a bytestream of a template .pbw
 * Generates a pbpack containing all of the resources and data
 * Generates all files for functioning watchface (app info, then for each platform: pbpack, manifest, app binary)
 * Zips them all up into a pbw
@@ -120,15 +121,15 @@ Run it
     * The `image_data` and `font_data` should be encoded with base64
     * optional: add `uuid` to `metadata` to force a specific uuid
 2. Run ```python3 create_watchface.py <template_dir> <info_path> <output_dir>```
-    * `<template_dir>` is the directory containing the (extracted) template pbw
+    * `<template_pbw_path>` is the path to the template pbw
     * `<info_path>` is the path to `watchface_info.json`
     * `<output_dir>` is the output directory for the final .pbw
-2. The .pbw will be written to `output_dir`
+2. The .pbw will be written to `output_dir/<watchface name>.pbw`
 
 For example:
 ```
 python3 create_watchface.py \
-    ../samples/resources/extracted-template-watchface/ \
+    ../samples/resources/template-watchface.pbw/ \
     ../samples/resources/hollow-knight/watchface_info.json \
     ../samples/pbws/
 ```
@@ -141,9 +142,10 @@ Prereqs:
 
 Run it
 1. Generate a json string containing watchface info
+2. Generate a bytestream (io.BytesIO specifically) containing the template pbw
 2. Use the function `create_watchface` with the following parameters:
     * `watchface_info_string` - The string version of the json output
-    * `template_dir` - Where on the machine the template files are stored
+    * `template_pbw_stream` - The bytestream version of the template pbw
     * This generates a pbw object as bytes
 3. Either write the pbw object to disk or send it elsewhere (e.g. back to the user)
 
@@ -164,8 +166,13 @@ Run it
     - [x] Figure out how appinfo is baked into binary and update there, too
 - [x] Generate full .pbw
     - [x] ... without writing to disk
-- [ ] Generate by loading in a template pbw rather than an extracted one
+- [x] Generate by loading in a template pbw rather than an extracted one
 - [x] Read png, fonts from base64 instead of file
+- [ ] Add error handling and proper messages for failures (will need to check with frontend on how to implement):
+    - [ ] Font too large (`Glyph too large!`)
+        * Resolution: reduce font size, use different font
+    - [ ] Image processing failure
+    - [ ] Invalid values
 - [ ] Match with final template watchface, web designer
 - [ ] And more...
 
@@ -174,6 +181,10 @@ Run it
 - [x] Create basic watchface with only background png
 - [x] Add time and corresponding font
 - [x] Add raw data and update bg color, font color
+- [ ] Add digital toggle
+- [ ] Add date
+- [ ] Add text
+- [ ] add analog
 - [ ] Add all placeholder resources
 - [ ] Add template logic for all watch cases
 - [ ] And more...

@@ -1,1 +1,0 @@
-{"manifestVersion": 2, "generatedBy": "LAPTOP-GLDJRPK9", "generatedAt": 1740174601, "application": {"timestamp": 1740174599, "sdk_version": {"major": 5, "minor": 86}, "crc": 3322011490, "name": "pebble-app.bin", "size": 1188}, "debug": {}, "type": "application", "resources": {"timestamp": 1740174599, "crc": 3095140864, "name": "app_resources.pbpack", "size": 7279}}
