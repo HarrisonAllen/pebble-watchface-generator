@@ -1,6 +1,6 @@
 {
   "name": "template-watchface",
-  "author": "Harrison Allen",
+  "author": "Watchface Generator",
   "version": "1.0.0",
   "keywords": ["pebble-app"],
   "private": true,

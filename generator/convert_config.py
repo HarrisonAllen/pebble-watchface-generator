@@ -62,6 +62,8 @@ def convert_config(conf, platform):
     conf_buffer.write(int_to_bytes(int(ana_conf["enabled"])))
     conf_buffer.write(int_to_bytes(ana_conf["x"], True))
     conf_buffer.write(int_to_bytes(ana_conf["y"], True))
+    conf_buffer.write(int_to_bytes(ana_conf["radius"]))
+    conf_buffer.write(int_to_bytes(ana_conf["hand_size"]))
     conf_buffer.write(int_to_bytes(int(ana_conf["second_hand"])))
     conf_buffer.write(int_to_bytes(int(ana_conf["pips"])))
     conf_buffer.write(color_to_bytes(get_bw_or_color(ana_conf, platform, "hands_colour")))

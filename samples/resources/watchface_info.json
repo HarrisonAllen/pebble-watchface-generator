@@ -23,8 +23,10 @@
         "clocks": {
             "analogue": {
                 "enabled": false,
-                "x": 72,
-                "y": 84,
+                "x": 0,
+                "y": 0,
+                "radius": 72,
+                "hand_size": 2,
                 "second_hand": false,
                 "pips": false,
                 "hands_colour": "#000000",

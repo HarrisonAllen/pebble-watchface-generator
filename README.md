@@ -11,6 +11,8 @@ This is a project for creating a watchface generator for pebble
     * [Generated samples](#generated-samples)
     * [Using the generator (as a human)](#using-the-generator-as-a-human)
     * [Using the generator (as a non-human)](#using-the-generator-as-a-non-human)
+* [Specific information](#specific-information)
+    * [Webapp to generator json](#webapp-to-generator-json)
 * [TODOs](#todos)
     * [Generator](#generator)
     * [Watchface](#watchface)
@@ -47,7 +49,7 @@ The watchface needs to be compiled into a .pbw for modification
 
 ### The web designer
 
-This is more WillO's wheelhouse, but it's a web interface for designing the watchface. Spits out a json blob with info.
+This is more Will0's wheelhouse, but it's a web interface for designing the watchface. Spits out a json blob with info.
 
 What I want out of this blob:
 * .png for the background in base64
@@ -63,7 +65,9 @@ What I want out of this blob:
 
 ### The generator
 
-This generator acts as a bridge between the web designer and the end-result watchface. Right now it's written in Python, but would be super slick to convert to JS to keep everything client side.
+This generator acts as a bridge between the web designer and the end-result watchface. Right now it's written in Python, but would be super slick to convert to JS to keep everything front end.
+
+Description and structure of the json is here: [Webapp to generator json](#webapp-to-generator-json)
 
 The generator will modify a .pbw. Really, it will take the base components, use them to generate the appropriate assets, and rezip them up. A .pbw file contains:
 * appinfo.json (metadata about the app)
@@ -150,6 +154,80 @@ Run it
     * This generates a pbw object as bytes
 3. Either write the pbw object to disk or send it elsewhere (e.g. back to the user)
 
+## Specific information
+
+### Webapp to generator json
+
+This outlines the structure for the json to be sent from the frontend to the backend. Some notes:
+* `x` and `y` coordinates are the **center of the object** relative to the **center of the watch**
+    * So a position of (-10, 20) will place the center of an object 10 pixels left of center, 20 pixels down of center
+There is an example implementation in `samples/resources/watchface_info.json`
+* Date format is separated by a hyphen `-` and joined by `spacer`. The date format can include any of the following parameters in the format:
+    * `dd` - the day of the month, e.g. `24`
+    * `mm` - the month number, e.g. `02`
+    * `yy` - the year, e.g. `25`
+    * `mon` - the month name, abbreviated, e.g. `Feb`
+    * `dow` - the day of the week name, abbreviated, e.g. `Mon`
+    * For example, `dd-mm-ff` with spacer `/` becomes `24/02/25`
+* The background image and colors support an alternative black and white version for aplite and diorite
+
+These are subject to change
+
+The json structure:
+* `metadata`: Information about the watchface as a whole
+    * `target_platforms`: [list of strings] - lists what platforms the face is compatible with (`aplite`, `basalt`, `chalk`, `diorite`)
+    * `name`: [string] - the name of the watchface
+    * `author`: [string] - the author of the watchface
+* `customization`: All of the customization configuration informatoin
+    * `background`: Configuration for the background and image
+        * `image_data`: [string | base64 encoded `png` file] - the background image for the watchface
+        * `bw_image_data`: [string | base64 encoded `png` file] - *optional* - alternative black and white background image
+        * `colour`: [string | html color format `#FFFFFF`] - background color
+        * `bw_colour`: [string | html color format `#FFFFFF`] - *optional* - alternative background color for aplite and diorite
+        * `x`: [int] - x position of the center of the background image
+        * `y`: [int] - y position of the center of the background image
+        * `width`: [int] - the width of the background image
+        * `height`: [int] - the height of the background image
+    * `clocks`: Configuration for the analog and digital clocks
+        * `analogue`: Configuration for the analog clock
+            * `enabled`: [bool] - show the analog clock?
+            * `x`: [int] - x position of the center of the clock
+            * `y`: [int] - y position of the center of the clock
+            * `radius`: [int] - outer radius of the clock
+            * `hand_size`: [int] - thickness in pixels of the hands
+            * `second_hand`: [bool] - show the second hand?
+            * `pips`: [bool] - show pips around the clock?
+            * `hands_colour`: [string | html color format `#FFFFFF`] - color of the hands
+            * `bw_hands_colour`: [string | html color format `#FFFFFF`] - *optional* - alternative black and white hands color
+        * `digital`: Configuration for the digital clock
+            * `font_data`: [string | base64 encoded `ttf` file] - the font for the time
+            * `enabled`: [bool] - show the digital clock?
+            * `font_size`: [int] - time font size
+            * `colour`: [string | html color format `#FFFFFF`] - time font color
+            * `bw_colour`: [string | html color format `#FFFFFF`] - *optional* - alternative time font color for aplite and diorite
+            * `x`: [int] - x position of the center of the time text
+            * `y`: [int] - y position of the center of the time text
+    * `date`: Configuration for the date
+        * `font_data`: [string | base64 encoded `ttf` file] - the font for the date
+        * `enabled`: [bool] - show the date?
+        * `format`: [string | max len 31 chars] - date format (see above)
+        * `spacer`: [string] - the character(s) to join the date formats
+        * `font_size`: [int] - date font size
+        * `colour`: [string | html color format `#FFFFFF`] - date font color
+        * `bw_colour`: [string | html color format `#FFFFFF`] - *optional* - alternative black and white date font color
+        * `x`: [int] - x position of the center of the date text
+        * `y`: [int] - y position of the center of the date text
+    * `text`: Configuration for the text
+        * `font_data`: [string | base64 encoded `ttf` file] - the font for the text
+        * `enabled`: [bool] - show the text?
+        * `text`: [string | max len 31 chars] - user entered text
+        * `font_size`: [int] - text font size
+        * `colour`: [string | html color format `#FFFFFF`] - text font color
+        * `bw_colour`: [string | html color format `#FFFFFF`] - *optional* - alternative black and white text font color
+        * `x`: [int] - x position of the center of the text text
+        * `y`: [int] - y position of the center of the text text
+
+
 ## TODOs
 
 ### Generator
@@ -182,12 +260,12 @@ Run it
 - [x] Create basic watchface with only background png
 - [x] Add time and corresponding font
 - [x] Add raw data and update bg color, font color
-- [ ] Add digital toggle
-- [ ] Add date
-- [ ] Add text
-- [ ] add analog
-- [ ] Add all placeholder resources
-- [ ] Add template logic for all watch cases
+- [x] Add digital toggle
+- [x] Add date
+- [x] Add text
+- [x] add analog
+- [x] Add all placeholder resources
+- [x] Add template logic for all watch cases
 - [ ] And more...
 
 ## Random learnings

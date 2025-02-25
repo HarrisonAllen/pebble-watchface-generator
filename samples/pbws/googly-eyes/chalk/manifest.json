@@ -1,1 +1,0 @@
-{"manifestVersion": 2, "generatedAt": 1740339822, "generatedBy": "WatchfaceGenerator", "debug": {}, "application": {"timestamp": 1740339822, "sdk_version": {"major": 5, "minor": 86}, "name": "pebble-app.bin", "size": 1188, "crc": 1062816245}, "resources": {"name": "app_resources.pbpack", "timestamp": 1740339822, "size": 6775, "crc": 4294967295}}

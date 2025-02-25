@@ -8,7 +8,10 @@
   #define CENTER_X 72
   #define CENTER_Y 84
 #endif
-#define FONT_BUFFER_Y 4
+#define FONT_BUFFER_Y 4 // How much extra space to give the font to render
+#define HOUR_MODIFIER 0.6 // Ratio of hour hand length to minute hand length
+#define MAJOR_PIP_RAD 2 // Radius of the cardinal hour pips
+#define MINOR_PIP_RAD 1 // Radius of the other hour pips
 
 
 static Window *s_main_window;
@@ -27,6 +30,17 @@ static GFont s_date_font;
 static TextLayer *s_text_layer;
 static GFont s_text_font;
 
+static Layer *s_analog_layer;
+static uint8_t s_sec, s_min, s_hour;
+static GRect s_hour_bounds;
+static GRect s_minute_bounds;
+
+// Given a line and its center, reposition value relative to that
+static int center_value(int value, int center_value, int size) {
+  return value + center_value - size / 2;
+}
+
+// Load watch data from the data file
 static void load_data(WatchData *watch_data) {
   ResHandle handle = resource_get_handle(RESOURCE_ID_DATA);
   size_t res_size = resource_size(handle);
@@ -37,20 +51,77 @@ static void update_time() {
   time_t temp = time(NULL);
   struct tm *tick_time = localtime(&temp);
 
-  // put hours and minutes into buffer
-  static char s_buffer[8];
-  strftime(s_buffer, sizeof(s_buffer), clock_is_24h_style() ?
-                                        "%H:%M" : "%I:%M", tick_time);
-  // display it
-  text_layer_set_text(s_time_layer, s_buffer);    
+  if (s_watch_data.digital_enabled) {
+    // put hours and minutes into buffer
+    static char s_buffer[8];
+    strftime(s_buffer, sizeof(s_buffer), clock_is_24h_style() ?
+                                          "%H:%M" : "%I:%M", tick_time);
+    // display it
+    text_layer_set_text(s_time_layer, s_buffer);
+  }
+
+  if (s_watch_data.analog_enabled) {
+    s_hour = tick_time->tm_hour % 12;
+    s_min = tick_time->tm_min;
+    s_sec = tick_time->tm_sec;
+    
+    layer_mark_dirty(s_analog_layer);
+  }
+}
+
+// This is where we draw the analog clock
+static void analog_update_proc(Layer *layer, GContext *ctx) {
+  if (!s_watch_data.analog_enabled) return;
+  
+  graphics_context_set_antialiased(ctx, false);
+  GPoint center = GPoint((s_minute_bounds.origin.x + s_minute_bounds.size.w) / 2, 
+                         (s_minute_bounds.origin.y + s_minute_bounds.size.h) / 2);
+
+  // Draw pips for the hours
+  if (s_watch_data.analog_pips_enabled) {
+    GPoint point;
+    for (uint8_t i = 0; i < 12; i++) {
+      graphics_context_set_fill_color(ctx, (GColor8)((uint8_t)s_watch_data.analog_hands_color));
+      point = gpoint_from_polar(s_minute_bounds, GOvalScaleModeFitCircle, DEG_TO_TRIGANGLE(i*(360/12)));
+      graphics_fill_circle(ctx, point, i % 3 == 0 ? MAJOR_PIP_RAD : MINOR_PIP_RAD);
+    }
+  }
+
+  // Calculate the hand angles
+  int32_t hour_angle = TRIG_MAX_ANGLE * s_hour / 12 + TRIG_MAX_ANGLE / 12 * s_min / 60;
+  int32_t minute_angle = TRIG_MAX_ANGLE * s_min / 60;
+  int32_t second_angle = TRIG_MAX_ANGLE * s_sec / 60;
+
+  // Calculate hand end points
+  GPoint hour_endpoint = gpoint_from_polar(s_hour_bounds, GOvalScaleModeFitCircle, hour_angle);
+  GPoint min_endpoint = gpoint_from_polar(s_minute_bounds, GOvalScaleModeFitCircle, minute_angle);
+  GPoint sec_endpoint = gpoint_from_polar(s_minute_bounds, GOvalScaleModeFitCircle, second_angle);
+  
+  // Draw the hour hand
+  graphics_context_set_stroke_width(ctx, s_watch_data.analog_hand_size);
+  graphics_context_set_stroke_color(ctx, (GColor8)((uint8_t)s_watch_data.analog_hands_color));
+  graphics_draw_line(ctx, center, hour_endpoint);
+
+  // Draw the minute hand
+  graphics_context_set_stroke_width(ctx, s_watch_data.analog_hand_size);
+  graphics_context_set_stroke_color(ctx, (GColor8)((uint8_t)s_watch_data.analog_hands_color));
+  graphics_draw_line(ctx, center, min_endpoint);
+
+  // Draw the second hand
+  if (s_watch_data.analog_seconds_enabled) {
+    graphics_context_set_stroke_width(ctx, 1);
+    graphics_context_set_stroke_color(ctx, (GColor8)((uint8_t)s_watch_data.analog_hands_color));
+    graphics_draw_line(ctx, center, sec_endpoint);
+  }
 }
 
 static void update_date(){
+  if (!s_watch_data.date_enabled) return;
   time_t temp = time(NULL);
   struct tm *tick_time = localtime(&temp);
 
   static char s_date_buffer[16];
-  strftime(s_date_buffer, sizeof(s_date_buffer), s_watch_data.date_format, tick_time); // displayed as "Wed Jan 01"
+  strftime(s_date_buffer, sizeof(s_date_buffer), s_watch_data.date_format, tick_time);
   
   text_layer_set_text(s_date_layer, s_date_buffer);
 }
@@ -60,15 +131,12 @@ static void time_handler(struct tm *tick_time, TimeUnits units_changed) {
   update_date();
 }
 
-static int center_value(int value, int center_value, int size) {
-  return value + center_value - size / 2;
-}
-
 static void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
   // time
+  // digital
   s_time_layer = text_layer_create(GRect(center_value(s_watch_data.digital_x, CENTER_X, bounds.size.w), 
                                          center_value(s_watch_data.digital_y, CENTER_Y, s_watch_data.digital_font_size + FONT_BUFFER_Y), 
                                          bounds.size.w, 
@@ -78,6 +146,24 @@ static void main_window_load(Window *window) {
   text_layer_set_text_color(s_time_layer, (GColor8)((uint8_t)s_watch_data.digital_font_color));
   text_layer_set_font(s_time_layer, s_time_font);
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
+  // analog
+  GPoint center = GPoint(center_value(s_watch_data.analog_x, CENTER_X, 0), 
+                         center_value(s_watch_data.analog_y, CENTER_Y, 0));
+  GRect analog_bounds = GRect(center.x - s_watch_data.analog_radius - MAJOR_PIP_RAD, 
+                              center.y - s_watch_data.analog_radius - MAJOR_PIP_RAD,
+                              s_watch_data.analog_radius * 2 + MAJOR_PIP_RAD * 2,
+                              s_watch_data.analog_radius * 2 + MAJOR_PIP_RAD * 2);
+  // These are relative to the analog layer
+  s_minute_bounds = GRect(MAJOR_PIP_RAD, 
+                          MAJOR_PIP_RAD,
+                          s_watch_data.analog_radius * 2,
+                          s_watch_data.analog_radius * 2);
+  s_hour_bounds = GRect(s_minute_bounds.origin.x + s_watch_data.analog_radius * ( 1 - HOUR_MODIFIER), 
+                        s_minute_bounds.origin.y + s_watch_data.analog_radius * ( 1 - HOUR_MODIFIER),
+                        s_watch_data.analog_radius * 2 * HOUR_MODIFIER, 
+                        s_watch_data.analog_radius * 2 * HOUR_MODIFIER);
+  s_analog_layer = layer_create(analog_bounds);
+  layer_set_update_proc(s_analog_layer, analog_update_proc);
 
   // date
   s_date_layer = text_layer_create(GRect(center_value(s_watch_data.date_x, CENTER_X, bounds.size.w),
@@ -100,7 +186,9 @@ static void main_window_load(Window *window) {
   text_layer_set_text_color(s_text_layer, (GColor8)((uint8_t)s_watch_data.text_font_color));
   text_layer_set_font(s_text_layer, s_text_font);
   text_layer_set_text_alignment(s_text_layer, GTextAlignmentCenter);
-  text_layer_set_text(s_text_layer, s_watch_data.text_text);
+  if (s_watch_data.text_enabled) {
+    text_layer_set_text(s_text_layer, s_watch_data.text_text);
+  }
 
   // bitmaps
   // bg
@@ -117,6 +205,7 @@ static void main_window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(s_time_layer));
   layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
   layer_add_child(window_layer, text_layer_get_layer(s_text_layer));
+  layer_add_child(window_layer, s_analog_layer);
 }
 
 static void main_window_unload(Window *window) {
@@ -135,6 +224,9 @@ static void main_window_unload(Window *window) {
   
   // unload gbitmaps
   gbitmap_destroy(s_background_bitmap);
+
+  // unload other layers
+  layer_destroy(s_analog_layer);
 }
 
 static void init() {
@@ -154,9 +246,13 @@ static void init() {
   // Show the Window on the watch, with animated=true
   window_stack_push(s_main_window, true);
 
-  // set up tick_handler to run every minute
-  tick_timer_service_subscribe(MINUTE_UNIT, time_handler);
-  // want to display time and at the start
+  // set up tick_handler to run every minute (or second if seconds enabled)
+  if (s_watch_data.analog_enabled && s_watch_data.analog_seconds_enabled) {
+    tick_timer_service_subscribe(SECOND_UNIT, time_handler);
+  } else {
+    tick_timer_service_subscribe(MINUTE_UNIT, time_handler);
+  }
+  // want to display time and date at the start
   update_time();
   update_date();
 }

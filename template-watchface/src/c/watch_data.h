@@ -9,41 +9,43 @@
 // Exception is strings of known lengths
 typedef struct {
     // Background data
-    uint16_t background_color;
-    int16_t background_x;
-    int16_t background_y;
-    uint16_t background_width;
-    uint16_t background_height;
+    unsigned short int background_color;
+    short int background_x;
+    short int background_y;
+    unsigned short int background_width;
+    unsigned short int background_height;
 
     // Clocks
     // Analog
-    uint16_t analog_enabled;
-    int16_t analog_x;
-    int16_t analog_y;
-    uint16_t analog_seconds_enabled;
-    uint16_t analog_pips_enabled;
-    uint16_t analog_hands_color; 
+    unsigned short int analog_enabled;
+    short int analog_x;
+    short int analog_y;
+    unsigned short int analog_radius;
+    unsigned short int analog_hand_size;
+    unsigned short int analog_seconds_enabled;
+    unsigned short int analog_pips_enabled;
+    unsigned short int analog_hands_color; 
     // Digital
-    uint16_t digital_enabled;
-    uint16_t digital_font_size;
-    uint16_t digital_font_color;
-    int16_t digital_x;
-    int16_t digital_y;
+    unsigned short int digital_enabled;
+    unsigned short int digital_font_size;
+    unsigned short int digital_font_color;
+    short int digital_x;
+    short int digital_y;
 
     // Date
-    uint16_t date_enabled;
-    uint16_t date_font_size;
-    uint16_t date_font_color;
-    int16_t date_x;
-    int16_t date_y;
+    unsigned short int date_enabled;
+    unsigned short int date_font_size;
+    unsigned short int date_font_color;
+    short int date_x;
+    short int date_y;
     char date_format[MAX_STRING_LEN];
 
     // Text
-    uint16_t text_enabled;
-    uint16_t text_font_size;
-    uint16_t text_font_color;
-    int16_t text_x;
-    int16_t text_y;
+    unsigned short int text_enabled;
+    unsigned short int text_font_size;
+    unsigned short int text_font_color;
+    short int text_x;
+    short int text_y;
     char text_text[MAX_STRING_LEN];
 } WatchData;
 
