@@ -61,6 +61,7 @@ What I want out of this blob:
     * targetPlatforms
     * name
     * author 
+    * version (optional, will default to 1.0)
     * uuid (optional, omit to autogenerate for updating existing watchfaces, starts with `13371337`)
 
 ### The generator
