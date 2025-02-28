@@ -23,7 +23,28 @@ APP_INFO_TEMPLATE = '''{
             {
                 "type": "bitmap", 
                 "name": "IMAGE_BACKGROUND", 
-                "file": "images/background.png"
+                "file": "background.png"
+            }, 
+            {
+                "characterRegex": "[0-9:]", 
+                "type": "font", 
+                "name": "FONT_TIME_52", 
+                "file": "font_time.ttf"
+            }, 
+            {
+                "type": "font", 
+                "name": "FONT_DATE_32", 
+                "file": "font_date.ttf"
+            }, 
+            {
+                "type": "font", 
+                "name": "FONT_TEXT_20", 
+                "file": "font_text.ttf"
+            }, 
+            {
+                "type": "raw", 
+                "name": "DATA", 
+                "file": "data.bin"
             }
         ]
     }, 
@@ -47,7 +68,7 @@ DATE_FONT_DICT = {
 }
 
 TEXT_FONT_DICT = {
-    'name': f'FONT_DATE_PLACEHOLDER',
+    'name': f'FONT_TEXT_PLACEHOLDER',
     'type': 'font'
 }
 

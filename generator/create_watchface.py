@@ -32,16 +32,28 @@ GENERATED_UUID_PREFIX_STR = "13371337"
 NAME_ADDR = (0x18, '32s') # truncated to 32 length byte string
 COMPANY_ADDR = (0x38, '32s') # truncated to 32 length byte string
 UUID_ADDR = (0x68, '16s') # 16 bytes, serialize with uuid.bytes
-RESOURCE_CRC_ADDR = (0x78, 'I') # 4 bytes
+RESOURCE_CRC_ADDR = (0x78, '<L') # 4 bytes
+CRC_ADDR = (0x14, '<L')
+STRUCT_SIZE_BYTES = 0x82
 
 # JSON Data placeholders
 FONT_SIZE = 52
 
-def flen(byte_stream):
+
+def flen(path):
+    statinfo = os.stat(path)
+    return statinfo.st_size
+
+def fstm32crc(path):
+    with open(path, 'r+b') as f:
+        binfile = f.read()
+        return stm32_crc.crc32(binfile) & 0xFFFFFFFF
+    
+def blen(byte_stream):
     return byte_stream.getbuffer().nbytes
 
 def stm32crc(byte_stream):
-    binfile = byte_stream.read()
+    binfile = byte_stream.getvalue()
     return stm32_crc.crc32(binfile) & 0xFFFFFFFF
     
 def generate_manifest(binary, resources):
@@ -61,16 +73,18 @@ def generate_manifest(binary, resources):
             "minor": 86
         },
         'name' : APP_BINARY,
-        'size': flen(binary),
+        'size': blen(binary),
         'crc': stm32crc(binary),
     }
         
     manifest['resources'] = {
         'name' : PBPACK_FILENAME,
         'timestamp' : timestamp,
-        'size' : flen(resources),
+        'size' : blen(resources),
         'crc' : stm32crc(resources),
     }
+
+    manifest['type'] = 'application'
 
     manifest_stream = StringIO()
     json.dump(manifest, manifest_stream)
@@ -158,7 +172,7 @@ def create_watchface(watchface_info_string, template_pbw_stream):
         date_font_dict['targetPlatforms'] = platform
 
         # Text font resource
-        text_font_dict = DATE_FONT_DICT.copy()
+        text_font_dict = TEXT_FONT_DICT.copy()
         text_font_dict['name'] = f'FONT_TEXT_{watchface_info["customization"]["text"]["font_size"]}'
         text_font_dict['data'] = convert_base64_to_bytes(watchface_info["customization"]["text"]["font_data"])
         text_font_dict['targetPlatforms'] = platform
