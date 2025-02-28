@@ -139,6 +139,7 @@ def create_watchface(watchface_info_string, template_pbw_stream):
         display_name=watchface_info['metadata']['name'],
         name=convert_name(watchface_info['metadata']['name']),
         author=watchface_info['metadata']['author'],
+        version=watchface_info['metadata'].get('version', '1.0'),
         new_uuid=uuid_str
     )
     app_info_stream = StringIO(app_info_str)

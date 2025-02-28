@@ -7,7 +7,7 @@ APP_INFO_TEMPLATE = '''{
     }, 
     "companyName": "$author", 
     "enableMultiJS": true, 
-    "versionLabel": "1.0", 
+    "versionLabel": "$version", 
     "capabilities": [], 
     "sdkVersion": "3", 
     "appKeys": {
