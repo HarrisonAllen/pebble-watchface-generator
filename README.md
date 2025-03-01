@@ -201,15 +201,16 @@ The json structure:
             * `hands_colour`: [string | html color format `#FFFFFF`] - color of the hands
             * `bw_hands_colour`: [string | html color format `#FFFFFF`] - *optional* - alternative black and white hands color
         * `digital`: Configuration for the digital clock
-            * `font_data`: [string | base64 encoded `ttf` file] - the font for the time
+            * `font_data`: [string | base64 encoded `ttf` file] - the font for the time, must be valid converted .ttf file
             * `enabled`: [bool] - show the digital clock?
             * `font_size`: [int] - time font size
             * `colour`: [string | html color format `#FFFFFF`] - time font color
             * `bw_colour`: [string | html color format `#FFFFFF`] - *optional* - alternative time font color for aplite and diorite
             * `x`: [int] - x position of the center of the time text
             * `y`: [int] - y position of the center of the time text
+            * `system_font`: [string] - *optional* - use a [system font](https://developer.rebble.io/developer.pebble.com/guides/app-resources/system-fonts/index.html) instead of a custom font, omit `FONT_KEY_`
     * `date`: Configuration for the date
-        * `font_data`: [string | base64 encoded `ttf` file] - the font for the date
+        * `font_data`: [string | base64 encoded `ttf` file] - the font for the date, must be valid converted .ttf file
         * `enabled`: [bool] - show the date?
         * `format`: [string | max len 31 chars] - date format (see above)
         * `spacer`: [string] - the character(s) to join the date formats
@@ -218,8 +219,9 @@ The json structure:
         * `bw_colour`: [string | html color format `#FFFFFF`] - *optional* - alternative black and white date font color
         * `x`: [int] - x position of the center of the date text
         * `y`: [int] - y position of the center of the date text
+        * `system_font`: [string] - *optional* - use a [system font](https://developer.rebble.io/developer.pebble.com/guides/app-resources/system-fonts/index.html) instead of a custom font, omit `FONT_KEY_`
     * `text`: Configuration for the text
-        * `font_data`: [string | base64 encoded `ttf` file] - the font for the text
+        * `font_data`: [string | base64 encoded `ttf` file] - the font for the text, must be valid converted .ttf file
         * `enabled`: [bool] - show the text?
         * `text`: [string | max len 31 chars] - user entered text
         * `font_size`: [int] - text font size
@@ -227,6 +229,7 @@ The json structure:
         * `bw_colour`: [string | html color format `#FFFFFF`] - *optional* - alternative black and white text font color
         * `x`: [int] - x position of the center of the text text
         * `y`: [int] - y position of the center of the text text
+        * `system_font`: [string] - *optional* - use a [system font](https://developer.rebble.io/developer.pebble.com/guides/app-resources/system-fonts/index.html) instead of a custom font, omit `FONT_KEY_`
 
 
 ## TODOs

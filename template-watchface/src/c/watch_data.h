@@ -31,6 +31,8 @@ typedef struct {
     unsigned short int digital_font_color;
     short int digital_x;
     short int digital_y;
+    unsigned short int digital_use_system_font;
+    char digital_system_font[MAX_STRING_LEN];
 
     // Date
     unsigned short int date_enabled;
@@ -39,6 +41,8 @@ typedef struct {
     short int date_x;
     short int date_y;
     char date_format[MAX_STRING_LEN];
+    unsigned short int date_use_system_font;
+    char date_system_font[MAX_STRING_LEN];
 
     // Text
     unsigned short int text_enabled;
@@ -47,6 +51,8 @@ typedef struct {
     short int text_x;
     short int text_y;
     char text_text[MAX_STRING_LEN];
+    unsigned short int text_use_system_font;
+    char text_system_font[MAX_STRING_LEN];
 } WatchData;
 
 #endif

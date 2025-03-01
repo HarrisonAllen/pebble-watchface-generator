@@ -141,7 +141,11 @@ static void main_window_load(Window *window) {
                                          center_value(s_watch_data.digital_y, CENTER_Y, s_watch_data.digital_font_size + FONT_BUFFER_Y), 
                                          bounds.size.w, 
                                          s_watch_data.digital_font_size + FONT_BUFFER_Y));
-  s_time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_TIME_52));
+  if (s_watch_data.digital_use_system_font) {
+    s_time_font = fonts_get_system_font(s_watch_data.digital_system_font);
+  } else {
+    s_time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_TIME_52));
+  }
   text_layer_set_background_color(s_time_layer, GColorClear);
   text_layer_set_text_color(s_time_layer, (GColor8)((uint8_t)s_watch_data.digital_font_color));
   text_layer_set_font(s_time_layer, s_time_font);
@@ -170,7 +174,11 @@ static void main_window_load(Window *window) {
                                          center_value(s_watch_data.date_y, CENTER_Y, s_watch_data.date_font_size + FONT_BUFFER_Y), 
                                          bounds.size.w, 
                                          s_watch_data.date_font_size + FONT_BUFFER_Y));
-  s_date_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_DATE_32));
+  if (s_watch_data.date_use_system_font) {
+    s_date_font = fonts_get_system_font(s_watch_data.date_system_font);
+  } else {
+    s_date_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_DATE_32));
+  }
   text_layer_set_background_color(s_date_layer, GColorClear);
   text_layer_set_text_color(s_date_layer, (GColor8)((uint8_t)s_watch_data.date_font_color));
   text_layer_set_font(s_date_layer, s_date_font);
@@ -181,7 +189,11 @@ static void main_window_load(Window *window) {
                                          center_value(s_watch_data.text_y, CENTER_Y, s_watch_data.text_font_size + FONT_BUFFER_Y), 
                                          bounds.size.w, 
                                          s_watch_data.text_font_size + FONT_BUFFER_Y));
-  s_text_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_TEXT_20));
+  if (s_watch_data.text_use_system_font) {
+    s_text_font = fonts_get_system_font(s_watch_data.text_system_font);
+  } else {
+    s_text_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_TEXT_20));
+  }
   text_layer_set_background_color(s_text_layer, GColorClear);
   text_layer_set_text_color(s_text_layer, (GColor8)((uint8_t)s_watch_data.text_font_color));
   text_layer_set_font(s_text_layer, s_text_font);
