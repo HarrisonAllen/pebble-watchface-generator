@@ -127,6 +127,7 @@ def create_watchface(watchface_info_string, template_pbw_stream):
         base_uuid = uuid.uuid1()
     uuid_str = generate_uuid_string(base_uuid, GENERATED_UUID_PREFIX_STR)
     uuid_bytes = generate_uuid_bytes(base_uuid, GENERATED_UUID_PREFIX_BYTES)
+    print("UUID:", uuid_str)
 
     # setup names
     trunc_name = bytes(truncate_to_32_bytes(watchface_info['metadata']['name']), 'UTF8')

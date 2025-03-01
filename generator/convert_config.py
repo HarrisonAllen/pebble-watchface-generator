@@ -8,8 +8,9 @@ DATE_FORMAT_CONVERSIONS = {
     "dd": "%d",
     "mm": "%m",
     "yy": "%y",
+    "YYYY": "%Y",
     "mon": "%b",
-    "dow": "%a"
+    "dow": "%a",
 }
 
 SYSTEM_FONTS = (

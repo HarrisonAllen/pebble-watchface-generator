@@ -166,10 +166,11 @@ There is an example implementation in `samples/resources/watchface_info.json`
 * Date format is separated by a hyphen `-` and joined by `spacer`. The date format can include any of the following parameters in the format:
     * `dd` - the day of the month, e.g. `24`
     * `mm` - the month number, e.g. `02`
-    * `yy` - the year, e.g. `25`
+    * `yy` - the year, abbreviated, e.g. `25`
+    * `YYYY` - the year, full, e.g. `2025`
     * `mon` - the month name, abbreviated, e.g. `Feb`
     * `dow` - the day of the week name, abbreviated, e.g. `Mon`
-    * For example, `dd-mm-ff` with spacer `/` becomes `24/02/25`
+    * For example, `dd-mm-yy` with spacer `/` becomes `24/02/25`
 * The background image and colors support an alternative black and white version for aplite and diorite
 
 These are subject to change
