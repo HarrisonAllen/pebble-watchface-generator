@@ -299,3 +299,7 @@ There's metadata baked into the binary. The important ones for us are:
 * company @ `0x38` format `<32s` (company name truncated to 32 length byte string)
 * uuid @ `0x68` format `<16s` (we'll want to create a new uuid and replace bytes 0:4 with "13371337")
 * resources crc @ `0x78` format `<I` (generated from resource pack)
+
+### manifest.json
+
+Within a `.pbw`, the file `manifest.json` contains crcs for `app_resources.pbpack` and `pebble-app.bin`. Emulators don't care if these values are wrong, but it will fail to install on real hardware with no descriptive error. Calculation for each is typically done on `open(file, 'r+b').read()`. However, since I am creating these files in memory and not writing to disk, I was using a `BytesIO` stream and using `read()` for the crc data. Instead of `read()` I needed to use `BytesIO.getvalue()` to calculate an equivalent crc.
