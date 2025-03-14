@@ -227,9 +227,18 @@ static void main_window_unload(Window *window) {
   text_layer_destroy(s_text_layer);
 
   // unload custom fonts
-  fonts_unload_custom_font(s_time_font);
-  fonts_unload_custom_font(s_date_font);
-  fonts_unload_custom_font(s_text_font);
+  if (!s_watch_data.digital_use_system_font)
+  {
+    fonts_unload_custom_font(s_time_font);
+  }
+  if (!s_watch_data.date_use_system_font)
+  {
+    fonts_unload_custom_font(s_date_font);
+  }
+  if (!s_watch_data.text_use_system_font)
+  {
+    fonts_unload_custom_font(s_text_font);
+  }
 
   // unload bitmap layers
   bitmap_layer_destroy(s_background_layer);
